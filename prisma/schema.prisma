@@ -65,3 +65,10 @@ model VerificationToken {
 
   @@id([identifier, token])
 }
+
+model File {
+  id       String @id @default(uuid())
+  filename String
+
+  createdAt DateTime @default(now())
+}
