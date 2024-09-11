@@ -25,7 +25,6 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  File      File[]
 }
 
 model Account {
@@ -65,19 +64,4 @@ model VerificationToken {
   expires    DateTime
 
   @@id([identifier, token])
-}
-
-model File {
-  id        String  @id @default(cuid())
-  name      String
-  fileName  String
-  size      Int
-  mimeType  String
-  isPrivate Boolean @default(false)
-  userId    String?
-  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sha256    String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
