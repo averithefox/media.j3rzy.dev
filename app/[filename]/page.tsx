@@ -2,9 +2,9 @@
 
 import { Metadata, ResolvingMetadata } from "next";
 import { File } from "@prisma/client";
-import { db } from "@/lib/db";
-import React, { cache } from "react";
+import React from "react";
 import Link from "next/link";
+import { getFileRecordByFilename } from "@/data";
 
 interface PageProps
 {
@@ -12,11 +12,9 @@ interface PageProps
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-const getFileByFilename = cache(async ( filename: string ): Promise<File | null> => db.file.findUnique({ where: { filename } }));
-
 export async function generateMetadata( props: PageProps, parent: ResolvingMetadata ): Promise<Metadata>
 {
-  const file: File | null = await getFileByFilename(props.params.filename);
+  const file: File | null = await getFileRecordByFilename(props.params.filename);
   const metadataBase: URL = (await parent).metadataBase!;
   
   if ( !file )
@@ -47,7 +45,7 @@ export async function generateMetadata( props: PageProps, parent: ResolvingMetad
 
 export default async function Page( { params }: PageProps )
 {
-  const file: File | null = await getFileByFilename(params.filename);
+  const file: File | null = await getFileRecordByFilename(params.filename);
   
   return (
     <main className="w-full h-full items-center justify-center flex font-mono whitespace-pre">

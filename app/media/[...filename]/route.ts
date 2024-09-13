@@ -1,43 +1,34 @@
 import { NextRequest } from "next/server";
-import { db } from "@/lib/db";
 import { File as FileRecord } from "@prisma/client";
-import * as fs from "node:fs/promises";
-import path from "node:path";
+import { getFileByFileRecord, getFileRecordByFilename } from "@/data";
 
-export async function GET( { nextUrl }: NextRequest )
+export async function GET ({ nextUrl }: NextRequest)
 {
-  const pathname: string[] = new URL(nextUrl).pathname.split("/").slice(1);
+  const pathname: string[] = nextUrl.pathname.split("/").slice(1);
   
   if ( pathname.length > 2 )
-    return new Response(JSON.stringify({ success: false, error: "Invalid path" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json({ success: false, error: "Invalid path" }, { status: 404 });
   
   if ( pathname.length < 2 )
-    return new Response(JSON.stringify({ success: false, error: "I'm a teapot" }), {
-      status: 418,
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json({ success: false, error: "I'm a teapot" }, { status: 418 });
   
-  try {
-    const filename = pathname[1];
-    const record: FileRecord | null = await db.file.findUnique({ where: { filename } });
+  try
+  {
+    const filename = decodeURIComponent(pathname[1]);
+    const record: FileRecord | null = await getFileRecordByFilename(filename);
     
     if ( !record )
-      return new Response(JSON.stringify({ success: false, error: "File not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return Response.json({ success: false, error: "File not found" }, { status: 404 });
     
-    const buffer: Buffer = await fs.readFile(path.join(process.cwd(), "uploads", record.hash));
+    const buffer: Buffer | null = await getFileByFileRecord(record);
+    
+    if ( !buffer )
+      return Response.json({ success: false, error: "File not found" }, { status: 404 });
+    
     return new Response(buffer, { headers: { "Content-Type": record.mimeType } });
   } catch ( e: any )
   {
     console.error(e);
-    return new Response(JSON.stringify({ success: false, error: e.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json({ success: false, error: e.message }, { status: 500 });
   }
 }

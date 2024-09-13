@@ -5,6 +5,8 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { IoTrashBin } from "react-icons/io5";
 
 interface File
 {
@@ -26,10 +28,11 @@ function isValidRegex (pattern: string): boolean
 
 export default function Page ()
 {
+  const session = useSession();
+  
   const [ files, setFiles ] = React.useState<File[]>([]);
   const [ loading, setLoading ] = React.useState<boolean>(false);
   const [ searchQuery, setSearchQuery ] = React.useState<string>("");
-  const [ validQuery, setValidQuery ] = React.useState<string>("");
   
   React.useEffect(() =>
   {
@@ -50,23 +53,46 @@ export default function Page ()
     <>
       <DragNDropOverlay setFiles={setFiles}/>
       <div
-        className="fixed bottom-0 left-1/2 transform -translate-x-1/2 rounded-md rounded-b-none shadow-lg bg-[#2c2c2c] p-1 font-mono">
+        className="fixed bottom-0 left-1/2 transform -translate-x-1/2 rounded-md rounded-b-none shadow-lg bg-[#2c2c2c] p-1 font-mono z-50">
         <input className="bg-transparent outline-none" onChange={(e) =>
         {
-          setSearchQuery(e.target.value);
-          setValidQuery((query) => isValidRegex(e.target.value) ? e.target.value : query);
+          setSearchQuery((query) => isValidRegex(e.target.value) ? e.target.value : query);
         }}/>
       </div>
       <main
-        className={cn("w-full grid gap-5 p-5 justify-items-start items-center justify-center", loading && "h-screen")}
+        className={cn("w-full grid gap-3 p-3 justify-items-start items-center justify-center", loading && "h-screen")}
         style={!loading ? {
           gridTemplateColumns: "repeat(auto-fit, minmax(200px, max-content))",
         } : {}}
       >
         {loading && <p>Loading...</p>}
-        {files.filter(file => validQuery ? new RegExp(validQuery, "img").test(file.name) : true).map((file, i) =>
+        {files.filter(file => searchQuery ? new RegExp(searchQuery, "img").test(file.name) : true).map((file, i) =>
           (
-            <div>
+            <div className="relative overflow-hidden group rounded-md">
+              {session.data?.user.role === "ADMIN" && (
+                <div
+                  className="absolute top-0 -translate-y-16 group-hover:translate-y-0 transition-all duration-250 w-full flex flex-row space-x-1 justify-center bg-black/50">
+                  <div className="flex-grow" />
+                  <button
+                    className="p-1 bg-red-500 hover:bg-red-600"
+                    onClick={async () =>
+                    {
+                      const res = await fetch("/files", {
+                        method: "DELETE",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ filename: file.name }),
+                      });
+                      const json = await res.json();
+                      if ( json.success )
+                        setFiles((files) => files.filter((f) => f.name !== file.name));
+                      else alert(json.error);
+                    }}>
+                    <IoTrashBin className="text-white" />
+                  </button>
+                </div>
+              )}
               {(() =>
               {
                 switch ( file.type.split("/")[0] )
@@ -83,25 +109,20 @@ export default function Page ()
                         alt={file.name}
                         width={200}
                         height={200}
-                        className="rounded-md w-auto h-auto"
+                        className="w-auto h-auto"
                         unoptimized={file.type === "image/gif"}
                       />
                     </Link>;
                   case "video":
-                    return <Link
-                      href={`/media/${file.name}`}
-                      target="_blank"
-                      className="cursor-pointer"
+                    return <video
+                      controls
+                      width={200}
+                      height={200}
                       key={i}
                     >
-                      <video
-                        src={`/media/${file.name}`}
-                        controls
-                        className="rounded-md"
-                        width={200}
-                        height={200}
-                      />
-                    </Link>;
+                      <source src={`/media/${file.name}`} type={file.type}/>
+                      Your browser does not support the video element.
+                    </video>;
                   case "audio":
                     return <audio controls key={i} className="w-[200px]">
                       <source src={`/media/${file.name}`} type={file.type}/>
@@ -116,7 +137,6 @@ export default function Page ()
                     >
                       <iframe
                         src={`/media/${file.name}`}
-                        className="rounded-md"
                         width={200}
                         height={200}
                       />
