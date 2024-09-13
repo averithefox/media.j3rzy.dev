@@ -21,7 +21,7 @@ export async function GET()
   } catch ( e: any )
   {
     console.error(e);
-    return Response.json({ success: false, error: e.message });
+    return Response.json({ success: false, error: e.message }, { status: 500 });
   }
 }
 
@@ -31,17 +31,27 @@ export async function POST( req: NextRequest )
   {
     const session = await auth();
     
-    if ( session?.user?.role !== "ADMIN" )
-      return Response.json({ success: false, error: "You don't have permission to upload files" });
+    const apiKeyRecord = await db.apiKey.findUnique({
+      where: {
+        key: req.headers.get("Authorization")?.replace(/^Bearer /, ""),
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
+    });
+    
+    if ( session?.user?.role !== "ADMIN" && !apiKeyRecord )
+      return Response.json({ success: false, error: "You don't have permission to upload files" }, { status: 401 });
     
     const formData: FormData = await req.formData();
     const files: File[] = formData.getAll("file") as File[];
     
     if ( files.length === 0 )
-      return Response.json({ success: false, error: "No files provided" });
+      return Response.json({ success: false, error: "No files provided" }, { status: 400 });
     
     if ( !files.every(file => file instanceof File) )
-      return Response.json({ success: false, error: "Invalid file" });
+      return Response.json({ success: false, error: "Invalid file" }, { status: 400 });
     
     const data = await Promise.all(files.map(async ( file ) =>
     {
@@ -53,6 +63,8 @@ export async function POST( req: NextRequest )
         buffer,
       };
     }));
+    
+    await fs.mkdir(path.join(process.cwd(), "uploads"), { recursive: true });
     
     const existingFilesData: FileRecord[] = await db.file.findMany();
     const uniqueData = data.filter(( { hash } ) => !existingFilesData.some(( { hash: existingHash } ) => hash === existingHash));
@@ -85,6 +97,6 @@ export async function POST( req: NextRequest )
   } catch ( e: any )
   {
     console.error(e);
-    return Response.json({ success: false, error: e.message });
+    return Response.json({ success: false, error: e.message }, { status: 500 });
   }
 }

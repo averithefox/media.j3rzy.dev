@@ -25,6 +25,7 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  ApiKey    ApiKey[]
 }
 
 model Account {
@@ -71,6 +72,16 @@ model File {
   filename String @unique
   hash     String @unique
   mimeType String
+
+  createdAt DateTime @default(now())
+}
+
+model ApiKey {
+  id        String    @id @default(cuid())
+  key       String    @unique
+  expiresAt DateTime?
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
