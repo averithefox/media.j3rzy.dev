@@ -67,8 +67,10 @@ model VerificationToken {
 }
 
 model File {
-  id       String @id @default(uuid())
-  filename String
+  id       String @id @default(cuid())
+  filename String @unique
+  hash     String @unique
+  mimeType String
 
   createdAt DateTime @default(now())
 }

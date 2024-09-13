@@ -5,4 +5,12 @@
 html, body, :root
 {
   @apply w-full h-full;
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar
+{
+  display: none;
 }
