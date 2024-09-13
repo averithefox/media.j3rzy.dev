@@ -13,7 +13,7 @@ interface ApiKey
   createdAt: Date;
 }
 
-export default function Page()
+export default function Page ()
 {
   const session = useSession();
   
@@ -67,13 +67,15 @@ export default function Page()
                 {"\n"}
                 {JSON.stringify(keys, null, 2)}
               </div>
-              <div className="bg-[#313131] p-2 mt-2 flex space-x-2 flex-row items-center font-mono text-xs whitespace-pre min-w-[350px]">
+              <div
+                className="bg-[#313131] p-2 mt-2 flex space-x-2 flex-row items-center font-mono text-xs whitespace-pre min-w-[350px]">
                 <input
                   className="bg-transparent outline-none w-full"
                   ref={deleteInput}
                 />
                 <button
-                  onClick={async () => {
+                  onClick={async () =>
+                  {
                     const key = deleteInput.current.value;
                     const res = await fetch("/api", { method: "DELETE", body: JSON.stringify({ key }) });
                     const json = await res.json();
@@ -81,10 +83,9 @@ export default function Page()
                     {
                       setKeys(keys.filter(k => k.key !== key));
                       deleteInput.current.value = "";
-                    }
-                    else alert(json.error);
+                    } else alert(json.error);
                   }}
-                ><IoTrashBin /></button>
+                ><IoTrashBin/></button>
               </div>
             </div>
           )}
