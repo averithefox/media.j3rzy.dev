@@ -38,7 +38,23 @@ export default function DragNDropOverlay( { setFiles }: DragNDropOverlayProps )
       
       const files: File[] = Array.from<File>(event.dataTransfer.files);
       const formData = new FormData();
-      for ( let file of files ) formData.append("file", file);
+      for ( let file of files )
+      {
+        const fileExtension = file.name.split(".").pop();
+        if ( file.type === "" && [
+          "txt", "md", "html", "css", "scss", "js", "ts", "json", "xml", "yml", "yaml", "toml", "ini", "conf", "cfg", "log", "csv",
+          "c", "cpp", "h", "hpp", "cs", "java", "kt", "kts", "py", "rb", "php", "pl", "sh", "bat", "ps1", "psm1", "psd1", "ps1xml",
+          "ps1xml", "psm1", "psm1", "psrc", "pssc", "psc1", "psc2", "nuspec", "resx", "resw", "resjson", "res", "rc", "idl", "odl",
+          "idl", "odl", "asm", "s", "S", "cl", "clj", "cljs", "cljc", "edn", "scala", "go", "dart", "swift", "kt", "kts", "rs",
+          "ts", "tsx", "jsx", "php", "php3", "php4", "php5", "php7", "php8", "phps", "php-s", "php-s-dist", "php-s-dist", "php-s-dist",
+          "js", "mjs", "cjs", "json", "json5", "jsonc", "jsonld", "jsonml", "json5", "json5", "json5", "json5", "json5", "json5",
+          "mdx", "r", "rmd", "jl", "m", "mat", "rdata", "sas", "sav", "dta", "do", "smcl", "tex", "sty", "cls", "bib", "rtex", "bst",
+          "lhs", "lhs", "texi", "dtx", "ltx", "cfg", "lst", "sty", "cls", "bib", "bat", "cmd", "vb", "vbs", "fs", "fsx", "fsi", "sql",
+          "sqlite", "db", "db3", "accdb", "mdb", "xlsx", "xls", "ods", "fods", "xlk", "dif", "gnumeric", "numbers",
+        ].includes(fileExtension!) )
+          file = new File([ file ], file.name, { type: "text/plain" });
+        formData.append("file", file);
+      }
       const res = await fetch("/files", {
         method: "POST",
         body: formData,

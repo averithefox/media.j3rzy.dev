@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { createHash } from "node:crypto";
 import * as fs from "node:fs/promises";
 import path from "node:path";
+import { fileTypeFromBuffer, FileTypeResult } from "file-type";
 
 export async function GET()
 {
@@ -31,7 +32,7 @@ export async function POST( req: NextRequest )
   {
     const session = await auth();
     
-    const apiKeyRecord = await db.apiKey.findUnique({
+    const apiKeyRecord = await db.apiKey.findFirst({
       where: {
         key: req.headers.get("Authorization")?.replace(/^Bearer /, ""),
         OR: [
@@ -56,10 +57,11 @@ export async function POST( req: NextRequest )
     const data = await Promise.all(files.map(async ( file ) =>
     {
       const buffer = Buffer.from(await file.arrayBuffer());
+      const type: FileTypeResult | undefined = await fileTypeFromBuffer(buffer);
       return {
         filename: file.name,
         hash: createHash("sha256").update(buffer).digest("hex"),
-        mimeType: file.type,
+        mimeType: file.type === "application/octet-stream" && type ? type.mime : file.type,
         buffer,
       };
     }));
