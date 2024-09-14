@@ -80,7 +80,7 @@ export default function Page ()
                 "bg-black/50 rounded-md p-1 gap-1",
               )}>
                 <Link
-                  href={`/file/${file.name}`}
+                  href={`/raw/${file.name}`}
                   target="_blank"
                   className="cursor-pointer p-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-md"
                   aria-label="Open in new tab"
@@ -126,7 +126,7 @@ export default function Page ()
                 {
                   case "image":
                     return <Image
-                      src={`/file/${file.name}`}
+                      src={`/raw/${file.name}`}
                       alt={file.name}
                       width={200}
                       height={200}
@@ -141,26 +141,26 @@ export default function Page ()
                       key={i}
                       className="rounded-sm"
                     >
-                      <source src={`/file/${file.name}`} type={file.type}/>
+                      <source src={`/raw/${file.name}`} type={file.type}/>
                       Your browser does not support the video element.
                     </video>;
                   case "audio":
                     return <div className="flex items-center justify-center w-[200px] h-[100px]">
                       <audio controls key={i} className="w-[200px]">
-                        <source src={`/file/${file.name}`} type={file.type}/>
+                        <source src={`/raw/${file.name}`} type={file.type}/>
                         Your browser does not support the audio element.
                       </audio>
                     </div>;
                   case "text":
                     return <iframe
-                      src={`/file/${file.name}`}
+                      src={`/raw/${file.name}`}
                       width={200}
                       height={200}
                     />;
                   default:
                     return <div className="w-[200px] h-[200px] flex items-center justify-center">
                       <Link
-                        href={`/file/${file.name}`}
+                        href={`/raw/${file.name}`}
                         target="_blank"
                         className="cursor-pointer"
                         key={i}
