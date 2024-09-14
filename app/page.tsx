@@ -47,6 +47,8 @@ export default function Page ()
         Array.isArray(json.data) &&
         json.data.every((file: any) => typeof file.name === "string" && typeof file.type === "string")
       ) setFiles(json.data);
+      else
+        alert(json.error);
       setLoading(false);
     });
   }, []);
@@ -70,41 +72,47 @@ export default function Page ()
         {loading && <p>Loading...</p>}
         {files.filter(file => searchQuery ? new RegExp(searchQuery, "img").test(file.name) : true).map((file, i) =>
           (
-            <div className="relative overflow-hidden group rounded-md">
-              <div
-                className="absolute top-0 -translate-y-16 group-hover:translate-y-0 transition-all duration-250 w-full flex flex-row justify-center bg-black/0">
-                <div className="flex-grow"/>
-                <button
-                  className="p-1 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700"
-                  onClick={async () => await navigator.clipboard.writeText(`${location.origin}/media/${file.name}`)}
-                  aria-label="Copy"
-                >
-                  <BiCopy className="text-white"/>
-                </button>
+            <div className="relative overflow-hidden group rounded-md max-w-[200px] max-h-[200px] hover:overflow-visible hover:z-30">
+              <div className={cn(
+                "opacity-0 group-hover:opacity-75 transition-all duration-300",
+                "transform left-1/2 -translate-x-1/2 bottom-1/2 translate-y-1/2",
+                "absolute grid grid-cols-2 flex-row justify-center",
+                "bg-black/50 rounded-md p-1 gap-1",
+              )}>
                 <Link
                   href={`/media/${file.name}`}
                   target="_blank"
-                  className="cursor-pointer p-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
+                  className="cursor-pointer p-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-md"
                   aria-label="Open in new tab"
                 >
                   <FaLink className="text-white"/>
                 </Link>
+                <button
+                  className="p-1 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-md"
+                  onClick={async () => await navigator.clipboard.writeText(`${location.origin}/${file.name}`)}
+                  aria-label="Copy"
+                >
+                  <BiCopy className="text-white"/>
+                </button>
                 {session.data?.user.role === "ADMIN" && (
                   <button
-                    className="p-1 bg-red-500 hover:bg-red-600 active:bg-red-700"
+                    className="p-1 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-md"
                     onClick={async () =>
                     {
-                      const res = await fetch("/files", {
-                        method: "DELETE",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ filename: file.name }),
-                      });
-                      const json = await res.json();
-                      if ( json.success )
-                        setFiles((files) => files.filter((f) => f.name !== file.name));
-                      else alert(json.error);
+                      if (confirm(`Are you sure you want to delete ${file.name}?`))
+                      {
+                        const res = await fetch("/files", {
+                          method: "DELETE",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({ filename: file.name }),
+                        });
+                        const json = await res.json();
+                        if ( json.success )
+                          setFiles((files) => files.filter((f) => f.name !== file.name));
+                        else alert(json.error);
+                      }
                     }}
                     aria-label="Delete"
                   >
@@ -122,7 +130,7 @@ export default function Page ()
                       alt={file.name}
                       width={200}
                       height={200}
-                      className="w-auto h-auto"
+                      className="w-auto h-auto rounded-sm"
                       unoptimized={file.type === "image/gif"}
                     />;
                   case "video":
@@ -131,12 +139,13 @@ export default function Page ()
                       width={200}
                       height={200}
                       key={i}
+                      className="rounded-sm"
                     >
                       <source src={`/media/${file.name}`} type={file.type}/>
                       Your browser does not support the video element.
                     </video>;
                   case "audio":
-                    return <div className="w-[200px] h-[200px] flex items-center justify-center">
+                    return <div className="flex items-center justify-center w-[200px] h-[100px]">
                       <audio controls key={i} className="w-[200px]">
                         <source src={`/media/${file.name}`} type={file.type}/>
                         Your browser does not support the audio element.
