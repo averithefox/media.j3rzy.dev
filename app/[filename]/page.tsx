@@ -35,10 +35,10 @@ export async function generateMetadata( props: PageProps, parent: ResolvingMetad
       title: file.filename,
       siteName: file.hash,
       description: "Meow :3",
-      url: `/media/${file.filename}`,
-      images: /^image\//m.test(file.mimeType) ? [ { url: new URL(`/media/${file.filename}`, metadataBase) } ] : undefined,
-      audio: /^audio\//m.test(file.mimeType) ? [ { url: new URL(`/media/${file.filename}`, metadataBase) } ] : undefined,
-      videos: /^video\//m.test(file.mimeType) ? [ { url: new URL(`/media/${file.filename}`, metadataBase) } ] : undefined,
+      url: `/file/${file.filename}`,
+      images: /^image\//m.test(file.mimeType) ? [ { url: new URL(`/file/${file.filename}`, metadataBase) } ] : undefined,
+      audio: /^audio\//m.test(file.mimeType) ? [ { url: new URL(`/file/${file.filename}`, metadataBase) } ] : undefined,
+      videos: /^video\//m.test(file.mimeType) ? [ { url: new URL(`/file/${file.filename}`, metadataBase) } ] : undefined,
     },
   });
 }
@@ -56,27 +56,27 @@ export default async function Page( { params }: PageProps )
           {
             case "image":
               return <img
-                src={`/media/${params.filename}`}
+                src={`/file/${params.filename}`}
                 alt={params.filename}
                 className="max-h-screen h-auth w-auto object-contain"
               />;
             case "audio":
               return <audio controls>
-                <source src={`/media/${file.filename}`} type={file.mimeType}/>
+                <source src={`/file/${file.filename}`} type={file.mimeType}/>
                 Your browser does not support the audio element.
               </audio>;
             case "video":
               return <video
-                src={`/media/${file.filename}`}
+                src={`/file/${file.filename}`}
                 controls
                 className="max-h-screen h-auth w-auto object-contain"
               />;
             case "text":
               return <iframe
-                src={`/media/${file.filename}`}
+                src={`/file/${file.filename}`}
                 className="h-screen w-screen"/>;
             default:
-              return <Link href={`/media/${file.filename}`} target="_blank" className="cursor-pointer">Download
+              return <Link href={`/file/${file.filename}`} target="_blank" className="cursor-pointer">Download
                 ({file.mimeType})</Link>;
           }
         })()
