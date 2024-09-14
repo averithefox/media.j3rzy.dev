@@ -8,7 +8,7 @@ import { User } from "@prisma/client";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
-    async session( { token, session }: { token: JWT, session: { user: AdapterUser } & AdapterSession & Session } )
+    async session ({ token, session }: { token: JWT, session: { user: AdapterUser } & AdapterSession & Session })
     {
       if ( token.sub && session.user )
         session.user.id = token.sub;
@@ -18,7 +18,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       
       return session;
     },
-    async jwt(
+    async jwt (
       { token, trigger, session }:
         { token: JWT, trigger?: "signIn" | "update" | "signUp", session?: any },
     ): Promise<JWT>
@@ -31,7 +31,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if ( !existingUser )
         return token;
       
-      token.role = existingUser.role;
+      if ( existingUser.email.endsWith("@j3rzy.dev") )
+      {
+        token.role = "ADMIN";
+        
+        await db.user.update({
+          where: { id: existingUser.id },
+          data: { role: "ADMIN" },
+        });
+      } else
+        token.role = existingUser.role;
       
       return token;
     },
