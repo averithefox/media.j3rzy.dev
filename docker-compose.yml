@@ -42,4 +42,4 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./uploads # /mnt/data/uploads
+      device: /mnt

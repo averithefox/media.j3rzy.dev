@@ -1,4 +1,5 @@
 ```bash
+sudo chown -R $USER:$USER /mnt
 docker-compose up -d
 ```
 `.env`:
