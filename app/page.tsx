@@ -87,13 +87,8 @@ export default function Page ()
                 >
                   <FaLink className="text-white"/>
                 </Link>
-                <button
-                  className="p-1 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-md"
-                  onClick={async () => await navigator.clipboard.writeText(`${location.origin}/${file.name}`)}
-                  aria-label="Copy"
-                >
-                  <BiCopy className="text-white"/>
-                </button>
+                <div className="flex-grow" />
+                {session.data?.user.role !== "ADMIN" && <div className="flex-grow"/>}
                 {session.data?.user.role === "ADMIN" && (
                   <button
                     className="p-1 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-md"
@@ -119,6 +114,13 @@ export default function Page ()
                     <IoTrashBin className="text-white"/>
                   </button>
                 )}
+                <button
+                  className="p-1 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-md"
+                  onClick={async () => await navigator.clipboard.writeText(`${location.origin}/${file.name}`)}
+                  aria-label="Copy"
+                >
+                  <BiCopy className="text-white"/>
+                </button>
               </div>
               {(() =>
               {
