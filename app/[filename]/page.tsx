@@ -66,8 +66,8 @@ export default async function Page ({ params }: PageProps)
           {
             case "image":
               return <img
-                src={`/raw/${params.filename}`}
-                alt={params.filename}
+                src={`/raw/${file.filename}`}
+                alt={file.filename}
                 className="max-h-screen h-auth w-auto object-contain"
               />;
             case "audio":
