@@ -1,6 +1,6 @@
 {
   "name": "media.j3rzy.dev",
-  "version": "0.1.0",
+  "version": "alpha",
   "private": true,
   "scripts": {
     "dev": "next dev",
