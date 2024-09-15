@@ -6,7 +6,10 @@ import { createHash } from "node:crypto";
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import { fileTypeFromBuffer, FileTypeResult } from "file-type";
-import { getFileRecordByFilename, getFileRecords } from "@/data";
+import { cache } from "react";
+
+const getFileRecords: () => Promise<FileRecord[]> = cache(async (): Promise<FileRecord[]> => db.file.findMany());
+const getFileRecordByFilename: (filename: string) => Promise<FileRecord | null> = cache(async (filename: string): Promise<FileRecord | null> => db.file.findUnique({ where: { filename } }));
 
 async function havePermission (req: NextRequest): Promise<boolean>
 {

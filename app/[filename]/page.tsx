@@ -2,9 +2,9 @@
 
 import { Metadata, ResolvingMetadata } from "next";
 import { File } from "@prisma/client";
-import React from "react";
+import React, { cache } from "react";
 import Link from "next/link";
-import { getFileRecordByFilename } from "@/data";
+import { db } from "@/lib/db";
 
 interface PageProps
 {
@@ -12,9 +12,19 @@ interface PageProps
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-export async function generateMetadata( props: PageProps, parent: ResolvingMetadata ): Promise<Metadata>
+const getFile = cache(async (filename: string) => await db.file.findFirst({
+  where: {
+    OR: [
+      { filename: filename },
+      { hash: filename },
+      { id: filename },
+    ]
+  }
+}));
+
+export async function generateMetadata (props: PageProps, parent: ResolvingMetadata): Promise<Metadata>
 {
-  const file: File | null = await getFileRecordByFilename(props.params.filename);
+  const file: File | null = await getFile(props.params.filename);
   const metadataBase: URL = (await parent).metadataBase!;
   
   if ( !file )
@@ -43,9 +53,9 @@ export async function generateMetadata( props: PageProps, parent: ResolvingMetad
   });
 }
 
-export default async function Page( { params }: PageProps )
+export default async function Page ({ params }: PageProps)
 {
-  const file: File | null = await getFileRecordByFilename(params.filename);
+  const file: File | null = await getFile(params.filename);
   
   return (
     <main className="w-full h-full items-center justify-center flex font-mono whitespace-pre">

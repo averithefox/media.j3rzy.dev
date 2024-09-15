@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { File as FileRecord } from "@prisma/client";
-import { getFileRecordByFilename } from "@/data";
 import fs from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import path from "node:path";
+import { db } from "@/lib/db";
 
 async function fileExists (filePath: string): Promise<boolean>
 {
@@ -30,7 +30,7 @@ export async function GET (req: NextRequest)
   try
   {
     const filename = decodeURIComponent(pathname[1]);
-    const record: FileRecord | null = await getFileRecordByFilename(filename);
+    const record: FileRecord | null = await db.file.findUnique({ where: { filename } });
     
     if ( !record )
       return Response.json({ success: false, error: "File not found" }, { status: 404 });
