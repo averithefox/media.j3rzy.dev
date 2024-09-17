@@ -14,6 +14,8 @@ interface File
 {
   name: string;
   type: string;
+  rawUrl: string;
+  url: string;
 }
 
 function isValidRegex (pattern: string): boolean
@@ -39,7 +41,7 @@ export default function Page ()
   React.useEffect(() =>
   {
     setLoading(true);
-    fetch("/files").then((res) => res.json()).then((json) =>
+    fetch("/files").then((res) => res.json()).then(json =>
     {
       if (
         json.success &&
@@ -80,7 +82,7 @@ export default function Page ()
                 "bg-black/50 rounded-md p-1 gap-1",
               )}>
                 <Link
-                  href={`/raw/${file.name}`}
+                  href={file.rawUrl}
                   target="_blank"
                   className="cursor-pointer p-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-md"
                   aria-label="Open in new tab"
@@ -105,7 +107,7 @@ export default function Page ()
                         });
                         const json = await res.json();
                         if ( json.success )
-                          setFiles((files) => files.filter((f) => f.name !== file.name));
+                          setFiles(files => files.filter((f) => f.name !== file.name));
                         else alert(json.error);
                       }
                     }}
@@ -116,7 +118,7 @@ export default function Page ()
                 )}
                 <button
                   className="p-1 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-md"
-                  onClick={async () => await navigator.clipboard.writeText(`${location.origin}/${file.name}`)}
+                  onClick={async () => await navigator.clipboard.writeText(file.url)}
                   aria-label="Copy"
                 >
                   <BiCopy className="text-white"/>
@@ -149,7 +151,7 @@ export default function Page ()
                   case "audio":
                     return <div className="flex items-center justify-center w-[200px] h-[100px]">
                       <audio controls key={i} className="w-[200px]">
-                        <source src={`/raw/${file.name}`} type={file.type}/>
+                        <source src={file.url} type={file.type}/>
                         Your browser does not support the audio element.
                       </audio>
                     </div>;

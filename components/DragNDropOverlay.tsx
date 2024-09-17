@@ -9,6 +9,8 @@ interface DragNDropOverlayProps
   setFiles?: React.Dispatch<React.SetStateAction<{
     name: string;
     type: string;
+    rawUrl: string;
+    url: string;
   }[]>>;
 }
 
