@@ -44,7 +44,7 @@ export default function Page ()
           </span></p>
           <button
             className="text-red-600 underline inline-block"
-            onClick={async () => await signOut({ callbackUrl: "/account" })}
+            onClick={async () => await signOut({ redirectTo: "/account" })}
           >Log Out
           </button>
           {session.data.user.role === "ADMIN" && (
@@ -92,7 +92,7 @@ export default function Page ()
         </div>
       ) : (
         <button className="p-2 border-[1px] border-black dark:border-gray-500 rounded-md inline-block"
-                onClick={async () => await signIn("discord", { callbackUrl: "/" })}>
+                onClick={async () => await signIn("discord", { redirectTo: "/" })}>
           <FaDiscord className="w-6 h-6"/>
         </button>
       )}

@@ -29,7 +29,7 @@ export default function DragNDropOverlay( { setFiles }: DragNDropOverlayProps )
       if ( event.dataTransfer?.items.length )
         setDraggingOver(true);
     };
-    const handleDragLeave = ( event: DragEvent ) => setDraggingOver(false);
+    const handleDragLeave = () => setDraggingOver(false);
     const handleDrop = async ( event: DragEvent ) =>
     {
       event.preventDefault();
