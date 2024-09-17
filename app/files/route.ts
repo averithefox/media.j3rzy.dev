@@ -40,7 +40,7 @@ async function fileExists (filePath: string): Promise<boolean>
   }
 }
 
-export async function GET ()
+export async function GET (req: NextRequest)
 {
   try
   {
@@ -50,6 +50,7 @@ export async function GET ()
       data: fileRecords.map((fileRecord) => ({
         name: fileRecord.filename,
         type: fileRecord.mimeType,
+        url: `${new URL(`/raw/${encodeURI(fileRecord.filename)}`, req.nextUrl).toString()}`,
       })),
     });
   } catch ( e: any )
@@ -117,6 +118,7 @@ export async function POST (req: NextRequest)
       data: uniqueData.map(({ filename, mimeType }) => ({
         name: filename,
         type: mimeType,
+        url: `${new URL(`/raw/${encodeURI(filename)}`, req.nextUrl).toString()}`,
       })),
     });
   } catch ( e: any )
