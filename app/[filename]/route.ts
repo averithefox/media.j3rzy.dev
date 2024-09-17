@@ -13,7 +13,7 @@ export async function GET( req: NextRequest )
     if ( !record ) return Response.json({ success: false, error: "File not found" }, { status: 404 });
     if ( !isBot ) return new Response(JSON.stringify({}), {
       status: 301,
-      headers: { Location: new URL(`/raw/${record.filename}`, req.nextUrl).toString() },
+      headers: { Location: new URL(`/raw/${record.filename}`, metadataBase.metadataBase!).toString() },
     });
     const metadata: { [key: string]: string } = {};
     metadata["og:site_name"] = metadataBase.openGraph?.siteName!;
