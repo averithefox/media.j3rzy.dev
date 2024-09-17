@@ -8,7 +8,6 @@ import path from "node:path";
 import { fileTypeFromBuffer, FileTypeResult } from "file-type";
 import { cache } from "react";
 import { NextURL } from "next/dist/server/web/next-url";
-import { metadata } from "@/app/layout";
 
 const getFileRecords: () => Promise<FileRecord[]> = cache(async (): Promise<FileRecord[]> => db.file.findMany());
 const getFileRecordByFilename: ( filename: string ) => Promise<FileRecord | null> = cache(async ( filename: string ): Promise<FileRecord | null> => db.file.findUnique({ where: { filename } }));
@@ -42,11 +41,11 @@ async function fileExists( filePath: string ): Promise<boolean>
   }
 }
 
-const getFileObject = ( { mimeType, filename }: { mimeType: string, filename: string } ) => ({
+const getFileObject = ( { mimeType, filename }: { mimeType: string, filename: string }, nextUrl: NextURL ) => ({
   name: filename,
   type: mimeType,
-  rawUrl: `${new URL(`/raw/${encodeURI(filename)}`, metadata.metadataBase!).toString()}`,
-  url: `${new URL(`/${encodeURI(filename)}`, metadata.metadataBase!).toString()}`,
+  rawUrl: `${new URL(`/raw/${encodeURI(filename)}`, nextUrl).toString()}`,
+  url: `${new URL(`/${encodeURI(filename)}`, nextUrl).toString()}`,
 });
 
 export async function GET( req: NextRequest )
@@ -56,7 +55,7 @@ export async function GET( req: NextRequest )
     const fileRecords: FileRecord[] = await getFileRecords();
     return Response.json({
       success: true,
-      data: fileRecords.map(getFileObject),
+      data: fileRecords.map(record => getFileObject(record, req.nextUrl)),
     });
   } catch ( e: any )
   {
@@ -120,7 +119,7 @@ export async function POST( req: NextRequest )
     
     return Response.json({
       success: true,
-      data: uniqueData.map(getFileObject),
+      data: uniqueData.map(record => getFileObject(record, req.nextUrl)),
     });
   } catch ( e: any )
   {

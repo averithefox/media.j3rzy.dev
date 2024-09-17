@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  metadataBase: process.env.NODE_ENV === "production" ? new URL("https://media.j3rzy.dev") : new URL("http://localhost:3000"), // Don't remove as it'll break the `(await parent).metadataBase!` in `@/app/[filename]/page.tsx:18`
+  metadataBase: new URL("https://media.j3rzy.dev"), // Don't remove as it'll break the `(await parent).metadataBase!` in `@/app/[filename]/page.tsx:18`
   title: "media.j3rzy.dev",
   description: "Jerzy's media host",
   openGraph: {
