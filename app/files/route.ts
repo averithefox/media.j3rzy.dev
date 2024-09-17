@@ -28,6 +28,18 @@ async function havePermission (req: NextRequest): Promise<boolean>
   return session?.user?.role === "ADMIN" || apiKeyRecord !== null;
 }
 
+async function fileExists (filePath: string): Promise<boolean>
+{
+  try
+  {
+    await fs.access(filePath, fs.constants.F_OK);
+    return true;
+  } catch
+  {
+    return false;
+  }
+}
+
 export async function GET ()
 {
   try
@@ -134,7 +146,8 @@ export async function DELETE (req: NextRequest)
       return Response.json({ success: false, error: "File not found" }, { status: 404 });
     
     await db.file.delete({ where: { filename: json.filename } });
-    await fs.rm(path.join(process.cwd(), "uploads", fileRecord.hash));
+    if (await fileExists(path.join(process.cwd(), "uploads", fileRecord.hash)))
+      await fs.rm(path.join(process.cwd(), "uploads", fileRecord.hash));
     
     return Response.json({ success: true });
   } catch ( e: any )
