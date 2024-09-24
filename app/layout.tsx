@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: metadataBase.href,
-    title: "media.j3rzy.dev",
+    title: "Meow :3",
     description: "Jerzy's media host",
     countryName: "United States",
     locale: "en_US",
-    siteName: "media.j3rzy.dev",
+    siteName: "Hewwo :3",
     images: [
       {
         url: new URL("/og-image.png", metadataBase).href,
