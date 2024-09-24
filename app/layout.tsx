@@ -5,20 +5,30 @@ import { Session } from "next-auth";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 
+const metadataBase: URL = process.env.NODE_ENV === "production" ?
+  new URL("https://media.j3rzy.dev") :
+  new URL("http://localhost:3000")
+
 export const metadata: Metadata = {
-  metadataBase: process.env.NODE_ENV === "production" ?
-    new URL("https://media.j3rzy.dev") :
-    new URL("http://localhost:3000"), // Don't remove as it'll break the `(await parent).metadataBase!` in `@/app/[filename]/page.tsx:18`
+  metadataBase,
   title: "Jerzy's media host",
   description: "Jerzy's media host",
   openGraph: {
     type: "website",
-    url: "https://media.j3rzy.dev",
+    url: metadataBase.href,
     title: "media.j3rzy.dev",
     description: "Jerzy's media host",
     countryName: "United States",
     locale: "en_US",
     siteName: "media.j3rzy.dev",
+    images: [
+      {
+        url: new URL("/og-image.png", metadataBase).href,
+        width: 1600,
+        height: 1372,
+        alt: "Averi here :3",
+      },
+    ],
   },
 };
 
