@@ -126,7 +126,7 @@ export default function Page ()
               </div>
               {(() =>
               {
-                switch ( file.type === "application/x-javascript" ? "text" : file.type.split("/")[0] )
+                switch ( file.type.split("/")[0] )
                 {
                   case "image":
                     return <Image
@@ -155,12 +155,6 @@ export default function Page ()
                         Your browser does not support the audio element.
                       </audio>
                     </div>;
-                  case "text":
-                    return <iframe
-                      src={`/raw/${file.name}`}
-                      width={200}
-                      height={200}
-                    />;
                   default:
                     return <div className="w-[200px] h-[200px] flex items-center justify-center">
                       <Link
