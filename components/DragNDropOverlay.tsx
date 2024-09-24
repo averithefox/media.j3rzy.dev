@@ -83,7 +83,8 @@ export default function DragNDropOverlay ({ setFiles }: DragNDropOverlayProps)
       event.preventDefault();
       await upload(event.dataTransfer?.files ?? null);
     }, { signal: controller.signal });
-    fileInputRef.current.addEventListener("change", async event => await upload(fileInputRef.current.files ?? null), { signal: controller.signal });
+    if (canUpload)
+      fileInputRef.current.addEventListener("change", async event => await upload(fileInputRef.current.files ?? null), { signal: controller.signal });
     
     return () => controller.abort();
   }, []);
@@ -111,20 +112,24 @@ export default function DragNDropOverlay ({ setFiles }: DragNDropOverlayProps)
           {canUpload ? "Drop files anywhere to upload" : "Sorry, but you doesn't seem to have permissions to upload files"}
         </h1>
       )}
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept="*/*"
-        className="hidden"
-        id="file"
-      />
-      <label
-        htmlFor="file"
-        className="fixed bottom-5 right-5 bg-black rounded-full cursor-pointer w-10 h-10 flex items-center justify-center pointer-events-auto"
-      >
-        <FaFile/>
-      </label>
+      {canUpload && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="*/*"
+            className="hidden"
+            id="file"
+          />
+          <label
+            htmlFor="file"
+            className="fixed bottom-5 right-5 bg-black rounded-full cursor-pointer w-10 h-10 flex items-center justify-center pointer-events-auto"
+          >
+            <FaFile/>
+          </label>
+        </>
+      )}
     </div>
   );
 }
