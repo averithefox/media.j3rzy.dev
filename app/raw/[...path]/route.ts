@@ -5,7 +5,7 @@ import { createReadStream } from "node:fs";
 import path from "node:path";
 import { db } from "@/lib/db";
 
-async function fileExists (filePath: string): Promise<boolean>
+async function fileExists( filePath: string ): Promise<boolean>
 {
   try
   {
@@ -17,7 +17,7 @@ async function fileExists (filePath: string): Promise<boolean>
   }
 }
 
-export async function GET (req: NextRequest)
+export async function GET( req: NextRequest )
 {
   const pathname: string[] = req.nextUrl.pathname.split("/").slice(1);
   
@@ -33,25 +33,25 @@ export async function GET (req: NextRequest)
     const record: FileRecord | null = await db.file.findUnique({ where: { filename } });
     
     if ( !record )
-      return Response.json({ success: false, error: "File not found" }, { status: 404 });
+      return Response.json({ success: false, error: "File not found", at: "database" }, { status: 404 });
     
     const filePath = path.join(process.cwd(), "uploads", record.hash);
     
     if ( !await fileExists(filePath) )
-      return Response.json({ success: false, error: "File not found" }, { status: 404 });
+      return Response.json({ success: false, error: "File not found", at: "filesystem" }, { status: 404 });
     
     const stat = await fs.stat(filePath);
     const range = req.headers.get("Range");
     
-    const streamToReadableStream = (readable: NodeJS.ReadableStream): ReadableStream<Uint8Array> =>
+    const streamToReadableStream = ( readable: NodeJS.ReadableStream ): ReadableStream<Uint8Array> =>
     {
       return new ReadableStream<Uint8Array>({
-        start (controller)
+        start( controller )
         {
           readable.on("data", chunk => controller.enqueue(new Uint8Array(chunk)));
           readable.on("end", () => controller.close());
           readable.on("error", err => controller.error(err));
-        }
+        },
       });
     };
     
@@ -67,7 +67,8 @@ export async function GET (req: NextRequest)
           "Content-Range": `bytes ${start}-${end || stat.size - 1}/${stat.size}`,
           "Accept-Ranges": "bytes",
           "Content-Length": ((end || stat.size - 1) - start + 1).toString(),
-        }
+          "X-File-Hash": record.hash,
+        },
       });
     } else
     {
@@ -75,7 +76,10 @@ export async function GET (req: NextRequest)
       const readableStream = streamToReadableStream(fileStream);
       
       return new Response(readableStream, {
-        headers: { "Content-Type": record.mimeType }
+        headers: {
+          "Content-Type": record.mimeType,
+          "X-File-Hash": record.hash,
+        },
       });
     }
   } catch ( e: any )
