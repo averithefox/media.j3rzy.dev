@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-git pull
+git pull --rebase
 
 check_uploads_dir()
 {
