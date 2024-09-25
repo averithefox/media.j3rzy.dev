@@ -8,11 +8,12 @@ import path from "node:path";
 import { fileTypeFromBuffer, FileTypeResult } from "file-type";
 import { cache } from "react";
 import { metadata } from "@/app/layout";
+import JSZip from "jszip";
 
 const getFileRecords: () => Promise<FileRecord[]> = cache(async (): Promise<FileRecord[]> => db.file.findMany());
-const getFileRecordByFilename: ( filename: string ) => Promise<FileRecord | null> = cache(async ( filename: string ): Promise<FileRecord | null> => db.file.findUnique({ where: { filename } }));
+const getFileRecordByFilename: (filename: string) => Promise<FileRecord | null> = cache(async (filename: string): Promise<FileRecord | null> => db.file.findUnique({ where: { filename } }));
 
-async function havePermission( req: NextRequest ): Promise<boolean>
+async function havePermission (req: NextRequest): Promise<boolean>
 {
   const session = await auth();
   
@@ -29,7 +30,7 @@ async function havePermission( req: NextRequest ): Promise<boolean>
   return session?.user?.role === "ADMIN" || apiKeyRecord !== null;
 }
 
-async function fileExists( filePath: string ): Promise<boolean>
+async function fileExists (filePath: string): Promise<boolean>
 {
   try
   {
@@ -41,18 +42,42 @@ async function fileExists( filePath: string ): Promise<boolean>
   }
 }
 
-const getFileObject = ( { mimeType, filename }: { mimeType: string, filename: string } ) => ({
+const getFileObject = ({ mimeType, filename }: { mimeType: string, filename: string }) => ({
   name: filename,
   type: mimeType,
-  rawUrl: `${new URL(`/raw/${encodeURI(filename)}`, metadata.metadataBase!).toString()}`,
-  url: `${new URL(`/${encodeURI(filename)}`, metadata.metadataBase!).toString()}`,
+  rawUrl: `${new URL(`/raw/${encodeURI(filename)}`, metadata.metadataBase!).href}`,
+  url: `${new URL(`/${encodeURI(filename)}`, metadata.metadataBase!).href}`,
 });
 
-export async function GET()
+export async function GET (req: NextRequest)
 {
+  const { searchParams } = new URL(req.url);
+  
   try
   {
     const fileRecords: FileRecord[] = await getFileRecords();
+    
+    if ( searchParams.has("archive") && await havePermission(req) )
+    {
+      const zip = new JSZip();
+      for ( const fileRecord of fileRecords )
+      {
+        const filePath: string = path.join(process.cwd(), "uploads", fileRecord.hash);
+        if ( !await fileExists(filePath) ) continue;
+        zip.file(fileRecord.filename, await fs.readFile(filePath));
+      }
+      zip.file("metadata.json", JSON.stringify({
+        "date": new Date().toISOString(),
+        "files": fileRecords
+      }, null, 2));
+      return new Response(await zip.generateAsync({ type: "nodebuffer" }), {
+        headers: {
+          "Content-Type": "application/zip",
+          "Content-Disposition": `attachment; filename="files.zip"`,
+        },
+      });
+    }
+    
     return Response.json({
       success: true,
       data: fileRecords.map(getFileObject),
@@ -64,7 +89,7 @@ export async function GET()
   }
 }
 
-export async function POST( req: NextRequest )
+export async function POST (req: NextRequest)
 {
   try
   {
@@ -82,7 +107,7 @@ export async function POST( req: NextRequest )
     if ( !files.every(file => file instanceof File) )
       return Response.json({ success: false, error: "Invalid file" }, { status: 400 });
     
-    const data = await Promise.all(files.map(async ( file ) =>
+    const data = await Promise.all(files.map(async (file) =>
     {
       const buffer = Buffer.from(await file.arrayBuffer());
       const type: FileTypeResult | undefined = await fileTypeFromBuffer(buffer);
@@ -97,23 +122,23 @@ export async function POST( req: NextRequest )
     await fs.mkdir(path.join(process.cwd(), "uploads"), { recursive: true });
     
     const existingFilesData: FileRecord[] = await getFileRecords();
-    const uniqueData = data.filter(( { hash } ) => !existingFilesData.some(( { hash: existingHash } ) => hash === existingHash));
+    const uniqueData = data.filter(({ hash }) => !existingFilesData.some(({ hash: existingHash }) => hash === existingHash));
     
     for ( let datum of uniqueData )
     {
-      const existingFile = existingFilesData.find(( { filename } ) => filename === datum.filename);
+      const existingFile = existingFilesData.find(({ filename }) => filename === datum.filename);
       if ( existingFile )
         datum.filename = datum.filename.replace(/(\.[^.]+)$/, `-${Math.random().toString(36).substring(2, 6)}$1`);
     }
     
-    await db.file.createMany({ data: uniqueData.map(( { buffer, ...data } ) => data) });
+    await db.file.createMany({ data: uniqueData.map(({ buffer, ...data }) => data) });
     
     const existingFiles: string[] = await fs.readdir(path.join(process.cwd(), "uploads"));
-    const missingFiles: string[] = uniqueData.map(( { hash } ) => hash).filter(( filename ) => !existingFiles.includes(filename));
+    const missingFiles: string[] = uniqueData.map(({ hash }) => hash).filter((filename) => !existingFiles.includes(filename));
     
-    await Promise.all(missingFiles.map(async ( filename ) =>
+    await Promise.all(missingFiles.map(async (filename) =>
     {
-      const file = uniqueData.find(( { hash } ) => hash === filename)!;
+      const file = uniqueData.find(({ hash }) => hash === filename)!;
       await fs.writeFile(path.join(process.cwd(), "uploads", filename), file.buffer);
     }));
     
@@ -128,7 +153,7 @@ export async function POST( req: NextRequest )
   }
 }
 
-export async function DELETE( req: NextRequest )
+export async function DELETE (req: NextRequest)
 {
   try
   {
@@ -159,7 +184,7 @@ export async function DELETE( req: NextRequest )
   }
 }
 
-export async function PUT( req: NextRequest )
+export async function PUT (req: NextRequest)
 {
   try
   {

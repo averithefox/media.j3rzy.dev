@@ -5,6 +5,9 @@ import { FaDiscord } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 import React from "react";
 import { IoTrashBin } from "react-icons/io5";
+import { PiFileArchive } from "react-icons/pi";
+import Link from "next/link";
+import { metadata } from "@/app/layout";
 
 interface ApiKey
 {
@@ -86,6 +89,14 @@ export default function Page ()
                     } else alert(json.error);
                   }}
                 ><IoTrashBin/></button>
+              </div>
+              <div className="bg-[#313131] p-2 mt-2 flex flex-row font-mono text-xs whitespace-pre min-w-[350px]">
+                <Link href="/files?archive">
+                  <PiFileArchive
+                    className="w-5 h-5"
+                    title="Download archive"
+                  />
+                </Link>
               </div>
             </div>
           )}
