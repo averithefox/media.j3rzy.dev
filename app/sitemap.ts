@@ -4,7 +4,6 @@ import { db } from "@/lib/db";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap>
 {
-  const files = await db.file.findMany({});
   return [
     {
       url: metadata.metadataBase!.href,
@@ -18,11 +17,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap>
       changeFrequency: "yearly",
       priority: 0.1,
     },
-    ...files.map(file => ({
-      url: new URL(`/${file.filename}`, metadata.metadataBase!).href,
-      lastModified: file.createdAt,
-      changeFrequency: "monthly" as "monthly",
-      priority: 0.5,
-    })),
   ];
 }
