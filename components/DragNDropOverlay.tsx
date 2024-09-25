@@ -124,7 +124,7 @@ export default function DragNDropOverlay ({ setFiles }: DragNDropOverlayProps)
           />
           <label
             htmlFor="file"
-            className="fixed bottom-5 right-5 bg-black rounded-full cursor-pointer w-10 h-10 flex items-center justify-center pointer-events-auto"
+            className="fixed bottom-5 right-5 bg-[#1c1e26] shadow-md rounded-full cursor-pointer w-10 h-10 flex items-center justify-center pointer-events-auto"
           >
             <FaFile/>
           </label>
