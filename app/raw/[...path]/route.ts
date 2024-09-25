@@ -21,9 +21,6 @@ export async function GET( req: NextRequest )
 {
   const pathname: string[] = req.nextUrl.pathname.split("/").slice(1);
   
-  //if ( pathname.length > 2 )
-  //  return Response.json({ success: false, error: "Invalid path" }, { status: 404 });
-  
   if ( pathname.length < 2 )
     return Response.json({ success: false, error: "I'm a teapot" }, { status: 418 });
   
