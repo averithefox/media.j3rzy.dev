@@ -11,13 +11,13 @@ const metadataBase: URL = process.env.NODE_ENV === "production" ?
 
 export const metadata: Metadata = {
   metadataBase,
-  title: "Jerzy's media host",
-  description: "Jerzy's media host",
+  title: "Random files",
+  description: "Random files",
   openGraph: {
     type: "website",
     url: metadataBase.href,
     title: "Meow :3",
-    description: "Jerzy's media host",
+    description: "Random files",
     countryName: "United States",
     locale: "en_US",
     siteName: "Hewwo :3",
