@@ -22,7 +22,7 @@ jobs:
           script: |
             cd ~
             if [ ! -d "media.j3rzy.dev" ]; then
-              git clone https://github.com/realcatirl/media.j3rzy.dev.git
+              git clone https://github.com/averithefox/media.j3rzy.dev.git
             fi
             cd media.j3rzy.dev
             chmod +x deploy.sh
