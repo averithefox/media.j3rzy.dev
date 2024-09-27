@@ -1,19 +1,19 @@
-FROM node:20-alpine
+FROM oven/bun:latest
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY bun.lockb package.json ./
 
-RUN npm install
+RUN bun install
 
 COPY . .
 
-RUN npx prisma generate
+RUN bun prisma generate
 
-RUN npm run build
+RUN bun run build
 
 RUN addgroup --system --gid 1001 postgres
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["bun", "run", "start"]
