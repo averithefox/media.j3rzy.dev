@@ -29,6 +29,8 @@
 		"@auth/prisma-adapter": "^2.5.3",
 		"@auth/sveltekit": "^1.5.3",
 		"@prisma/client": "^5.20.0",
+		"file-type": "^19.5.0",
+		"jszip": "^3.10.1",
 		"prisma": "^5.20.0"
 	}
 }

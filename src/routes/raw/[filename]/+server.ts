@@ -1,10 +1,10 @@
-import type { RequestEvent } from "@sveltejs/kit";
+import type { RequestHandler } from "./$types";
 import { db } from "$lib/server/db";
 import * as path from "node:path";
 
-export async function GET (req: RequestEvent)
+export const GET: RequestHandler = async (event) =>
 {
-  const { filename: pathname } = req.params;
+  const { filename: pathname } = event.params;
   
   if (!pathname)
     return Response.json({ success: false, error: "I'm a teapot" }, { status: 418 })
