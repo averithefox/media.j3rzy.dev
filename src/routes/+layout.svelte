@@ -10,7 +10,7 @@
 
 {#if $page.url.pathname.split("/").filter(Boolean).length !== 1}
   <MetaTags
-    title="Files :3"
+    title="Files"
     titleTemplate="%s :3"
     description="CDN or something, idk"
     canonical={basePath}
