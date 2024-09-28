@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { cn } from "$lib";
   import type { Session } from "@auth/sveltekit";
   import type { FileObject } from "$lib/types";
 
@@ -7,9 +6,7 @@
   import TrashBin from "$components/icons/trash-bin.svelte";
   import Copy from "$components/icons/copy.svelte";
   import FileTile from "$components/file-tile.svelte";
-
-  export let data: { success: boolean, data?: Array<FileObject>, session: Session };
-  let { data: files, session } = data;
+  import DropOverlay from "$components/drop-overlay.svelte";
 
   const deleteFile = async (file: FileObject) =>
   {
@@ -20,29 +17,30 @@
       body: JSON.stringify({ filename: file.name }),
     });
     const json = await res.json();
-    if ( json.success ) files = files!.filter(f => f.name !== file.name);
+    if ( json.success ) files = files.filter(f => f.name !== file.name);
     else alert(json.error);
   };
+
+  export let data: { success: boolean, data?: Array<FileObject>, session: Session };
+  let { data: files = [], session } = data;
 </script>
 
-<img src="/icons/link.svg" alt="Open in new tab" width="1em" height="1em" class="text-white"/>
+<DropOverlay
+  canUpload={session.user.role === "ADMIN"}
+  on:upload={e => files = [...files, ...e.detail]}
+/>
 
 {#if files}
   <main
     class="w-full grid gap-3 p-3 justify-items-start items-center justify-center"
     style="grid-template-columns: repeat(auto-fit, minmax(200px, max-content));"
   >
-    {#each files as file}
+    {#each files as file (file.name)}
       <div
         class="relative overflow-hidden group rounded-md max-w-[200px] max-h-[200px] hover:overflow-visible hover:z-30"
       >
         <!-- "Toolbox" -->
-        <div class={cn(
-          "opacity-0 group-hover:opacity-75 transition-all duration-300",
-          "transform left-1/2 -translate-x-1/2 bottom-1/2 translate-y-1/2",
-          "absolute grid grid-cols-2 flex-row justify-center",
-          "bg-black/50 rounded-md p-1 gap-1",
-        )}>
+        <div class="opacity-0 group-hover:opacity-75 transition-all duration-300 transform left-1/2 -translate-x-1/2 bottom-1/2 translate-y-1/2 bg-black/50 rounded-md p-1 gap-1 absolute grid grid-cols-2 flex-row justify-center">
           <a
             href={file.rawUrl}
             target="_blank"
