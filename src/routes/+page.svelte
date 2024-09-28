@@ -21,12 +21,12 @@
     else alert(json.error);
   };
 
-  export let data: { files: { success: boolean, data?: Array<FileObject>, error?: string }, session: Session };
+  export let data: { files: { success: boolean, data?: Array<FileObject>, error?: string }, session: Session | null };
   let { files: { success, error, data: files = [] }, session } = data;
 </script>
 
 <DropOverlay
-  canUpload={session.user.role === "ADMIN"}
+  canUpload={session?.user.role === "ADMIN"}
   on:upload={e => files = [...files, ...e.detail]}
 />
 
@@ -53,7 +53,7 @@
               <Link class="text-white"/>
             </a>
             <div class="flex-grow"/>
-            {#if session.user.role === "ADMIN"}
+            {#if session?.user.role === "ADMIN"}
               <button
                 class="p1 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-md flex items-center justify-center"
                 on:click={async () => await deleteFile(file)}
