@@ -118,7 +118,7 @@ export const POST: RequestHandler = async (event) =>
     await Promise.all(missingFiles.map(async (filename) =>
     {
       const file = uniqueData.find(({ hash }) => hash === filename)!;
-      await fs.writeFile(path.join(process.cwd(), "uploads", filename), new DataView(file.buffer));
+      await Bun.write(path.join(process.cwd(), "uploads", filename), file.buffer);
     }));
     
     return Response.json({

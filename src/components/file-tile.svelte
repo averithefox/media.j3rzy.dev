@@ -1,7 +1,7 @@
-<script>
-  /** @type {{ name: string, type: string, rawUrl: string, url: string }} */
-  export let file;
-  /** @type {"image" | "video" | "audio" | string} */
+<script lang="ts">
+  import type { FileObject } from "$lib/types";
+
+  export let file: FileObject;
   const mimeGroup = file.type.split("/")[0];
 </script>
 
