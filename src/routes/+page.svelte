@@ -21,8 +21,8 @@
     else alert(json.error);
   };
 
-  export let data: { success: boolean, data?: Array<FileObject>, session: Session };
-  let { data: files = [], session } = data;
+  export let data: { files: { success: boolean, data?: Array<FileObject>, error?: string }, session: Session };
+  let { files: { success, error, data: files = [] }, session } = data;
 </script>
 
 <DropOverlay
@@ -30,55 +30,63 @@
   on:upload={e => files = [...files, ...e.detail]}
 />
 
-{#if files}
-  <main
-    class="w-full grid gap-3 p-3 justify-items-start items-center justify-center"
-    style="grid-template-columns: repeat(auto-fit, minmax(200px, max-content));"
-  >
-    {#each files as file (file.name)}
-      <div
-        class="relative overflow-hidden group rounded-md max-w-[200px] max-h-[200px] hover:overflow-visible hover:z-30"
-      >
-        <!-- "Toolbox" -->
-        <div class="opacity-0 group-hover:opacity-75 transition-all duration-300 transform left-1/2 -translate-x-1/2 bottom-1/2 translate-y-1/2 bg-black/50 rounded-md p-1 gap-1 absolute grid grid-cols-2 flex-row justify-center">
-          <a
-            href={file.rawUrl}
-            target="_blank"
-            class="cursor-pointer p-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-md"
-            title="Open in new tab"
-            aria-label="Open in new tab"
-          >
-            <Link class="text-white"/>
-          </a>
-          <div class="flex-grow"/>
-          {#if session.user.role === "ADMIN"}
-            <button
-              class="p1 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-md flex items-center justify-center"
-              on:click={async () => await deleteFile(file)}
-              title="Delete"
-              aria-label="Delete"
+{#if success}
+  {#if files}
+    <main
+      class="w-full grid gap-3 p-3 justify-items-start items-center justify-center"
+      style="grid-template-columns: repeat(auto-fit, minmax(200px, max-content));"
+    >
+      {#each files as file (file.name)}
+        <div
+          class="relative overflow-hidden group rounded-md max-w-[200px] max-h-[200px] hover:overflow-visible hover:z-30"
+        >
+          <!-- "Toolbox" -->
+          <div
+            class="opacity-0 group-hover:opacity-75 transition-all duration-300 transform left-1/2 -translate-x-1/2 bottom-1/2 translate-y-1/2 bg-black/50 rounded-md p-1 gap-1 absolute grid grid-cols-2 flex-row justify-center">
+            <a
+              href={file.rawUrl}
+              target="_blank"
+              class="cursor-pointer p-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-md"
+              title="Open in new tab"
+              aria-label="Open in new tab"
             >
-              <TrashBin class="text-white"/>
-            </button>
-          {:else}
+              <Link class="text-white"/>
+            </a>
             <div class="flex-grow"/>
-          {/if}
-          <button
-            class="p-1 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-md"
-            on:click={async () => await navigator.clipboard.writeText(file.url)}
-            title="Copy URL"
-            aria-label="Copy URL"
-          >
-            <Copy class="text-white"/>
-          </button>
+            {#if session.user.role === "ADMIN"}
+              <button
+                class="p1 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-md flex items-center justify-center"
+                on:click={async () => await deleteFile(file)}
+                title="Delete"
+                aria-label="Delete"
+              >
+                <TrashBin class="text-white"/>
+              </button>
+            {:else}
+              <div class="flex-grow"/>
+            {/if}
+            <button
+              class="p-1 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-md"
+              on:click={async () => await navigator.clipboard.writeText(file.url)}
+              title="Copy URL"
+              aria-label="Copy URL"
+            >
+              <Copy class="text-white"/>
+            </button>
+          </div>
+          <!-- "Toolbox" -->
+          <FileTile {file}/>
         </div>
-        <!-- "Toolbox" -->
-        <FileTile {file}/>
-      </div>
-    {/each}
-  </main>
+      {/each}
+    </main>
+  {:else}
+    <main class="w-full h-full flex items-center justify-center">
+      <h1>No files found</h1>
+    </main>
+  {/if}
 {:else}
-  <main class="w-full h-full flex items-center justify-center">
-    <h1>No files found</h1>
+  <main class="w-full h-full flex flex-col items-center justify-center text-red-600">
+    <h1>An error occurred!</h1>
+    <h2>{error}</h2>
   </main>
 {/if}
