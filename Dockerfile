@@ -26,8 +26,6 @@ COPY --from=prerelease /app/package.json .
 COPY --from=prerelease /app/prisma prisma
 COPY ./static static
 
-RUN ls -la
-
 RUN bun prisma generate
 
 USER bun
