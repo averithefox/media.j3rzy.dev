@@ -1,36 +1,43 @@
-<script>
+<script lang="ts">
   import { MetaTags } from "svelte-meta-tags";
+  import { page } from "$app/stores";
+
   import "../app.css";
+
+  export let data: { basePath: string };
+  let { basePath } = data;
 </script>
 
-<MetaTags
-  title="Files :3"
-  titleTemplate="%s | media.j3rzy.dev"
-  description="CDN or something, idk"
-  canonical="https://media.j3rzy.dev"
-  openGraph={{
-    type: 'website',
-    url: 'https://media.j3rzy.dev',
-    title: 'Meow :3',
-    description: 'CDN or something, idk',
-    siteName: 'Hai :3',
-    images: [
-      {
-        url: 'https://media.j3rzy.dev/og-image.jpg',
-        width: 1600,
-        height: 1372,
-        alt: 'Og Image Alt',
-      },
-    ],
-  }}
-  twitter={{
-    handle: '@averithefox',
-    site: '@averithefox',
-    cardType: 'summary_large_image',
-    title: 'Meow :3',
-    description: 'CDN or something, idk',
-    image: 'https://media.j3rzy.dev/og-image.jpg',
-  }}
-/>
+{#if $page.url.pathname.split("/").filter(Boolean).length !== 1}
+  <MetaTags
+    title="Files :3"
+    titleTemplate="%s :3"
+    description="CDN or something, idk"
+    canonical={basePath}
+    openGraph={{
+      type: 'website',
+      url: basePath,
+      title: 'Meow :3',
+      description: 'CDN or something, idk',
+      siteName: 'Hai :3',
+      images: [
+        {
+          url: new URL('og-image.jpg', basePath).href,
+          width: 1600,
+          height: 1372,
+          alt: 'Og Image Alt'
+        }
+      ]
+    }}
+    twitter={{
+      handle: '@averithefox',
+      site: '@averithefox',
+      cardType: 'summary_large_image',
+      title: 'Meow :3',
+      description: 'CDN or something, idk',
+      image: new URL('og-image.jpg', basePath).href
+    }}
+  />
+{/if}
 
 <slot/>

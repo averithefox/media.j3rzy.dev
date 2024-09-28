@@ -1,6 +1,6 @@
 {
-	"name": "media.j3rzy.dev-svelte",
-	"version": "0.0.1",
+	"name": "media.j3rzy.dev",
+	"version": "alpha",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",

@@ -43,7 +43,7 @@
       >
         {file.name} ({file.type})
       </a>
-    </div>;
+    </div>
   {/if}
 {:else}
   <div class="w-[200px] h-[200px] flex items-center justify-center">

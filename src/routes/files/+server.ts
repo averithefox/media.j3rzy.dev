@@ -5,8 +5,7 @@ import JSZip from "jszip";
 import * as path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "node:fs/promises";
-
-const baseURI = new URL(process.env.NODE_ENV === "production" ? "https://media.j3rzy.dev" : "http://localhost:5173");
+import { basePath } from "$lib/server";
 
 const isAuthorized = async (req: Request, session: Session | null) =>
   session?.user?.role === "ADMIN" || await db.apiKey.findFirst({
@@ -22,8 +21,8 @@ const isAuthorized = async (req: Request, session: Session | null) =>
 const toFileObject = ({ mimeType, filename }: { mimeType: string, filename: string }) => ({
   name: filename,
   type: mimeType,
-  rawUrl: new URL(`/raw/${encodeURI(filename)}`, baseURI).href,
-  url: new URL(`/${encodeURI(filename)}`, baseURI).href,
+  rawUrl: new URL(`/raw/${encodeURI(filename)}`, basePath).href,
+  url: new URL(`/${encodeURI(filename)}`, basePath).href,
 });
 
 export const GET: RequestHandler = async (event) =>

@@ -6,8 +6,8 @@ export const GET: RequestHandler = async (event) =>
 {
   const { filename: pathname } = event.params;
   
-  if (!pathname)
-    return Response.json({ success: false, error: "I'm a teapot" }, { status: 418 })
+  if ( !pathname )
+    return Response.json({ success: false, error: "I'm a teapot" }, { status: 418 });
   
   try
   {
@@ -19,7 +19,7 @@ export const GET: RequestHandler = async (event) =>
     
     const file = Bun.file(path.join(process.cwd(), "uploads", record.hash));
     
-    if (!await file.exists())
+    if ( !await file.exists() )
       return Response.json({ success: false, error: "File not found", at: "filesystem" }, { status: 404 });
     
     return new Response(file.stream(), {
@@ -31,6 +31,12 @@ export const GET: RequestHandler = async (event) =>
     });
   } catch ( e: any )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 })
+    return Response.json({ success: false, error: e.message }, { status: 500 });
   }
-}
+};
+
+export const HEAD: RequestHandler = async (event) => new Response(null, {
+  headers: {
+    "Content-Type": JSON.stringify((await db.file.findUnique({ where: { filename: decodeURIComponent(event.params.filename) } }))?.mimeType ?? null),
+  }
+});
