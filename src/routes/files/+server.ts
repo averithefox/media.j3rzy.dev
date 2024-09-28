@@ -6,6 +6,8 @@ import * as path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "node:fs/promises";
 
+const baseURI = new URL(process.env.NODE_ENV === "production" ? "https://media.j3rzy.dev" : "http://localhost:5173");
+
 const isAuthorized = async (req: Request, session: Session | null) =>
   session?.user?.role === "ADMIN" || await db.apiKey.findFirst({
     where: {
@@ -20,8 +22,8 @@ const isAuthorized = async (req: Request, session: Session | null) =>
 const toFileObject = ({ mimeType, filename }: { mimeType: string, filename: string }) => ({
   name: filename,
   type: mimeType,
-  rawUrl: `https://media.j3rzy.dev/raw/${encodeURI(filename)}`,
-  url: `https://media.j3rzy.dev/${encodeURI(filename)}`,
+  rawUrl: new URL(`/raw/${encodeURI(filename)}`, baseURI).href,
+  url: new URL(`/${encodeURI(filename)}`, baseURI).href,
 });
 
 export const GET: RequestHandler = async (event) =>
@@ -38,21 +40,18 @@ export const GET: RequestHandler = async (event) =>
     )
     {
       const zip = new JSZip();
-      console.log("Creating archive with", fileRecords.length, "files");
       
       for ( const fileRecord of fileRecords )
       {
         const file = Bun.file(path.join(process.cwd(), "uploads", fileRecord.hash));
         if ( !await file.exists() ) continue;
         zip.file(fileRecord.filename, await file.bytes());
-        console.log("Added", fileRecord.filename);
       }
       
       zip.file("metadata.json", JSON.stringify({
         "date": new Date().toISOString(),
         "files": fileRecords
       }, null, 2));
-      console.log("Added metadata.json");
       
       return new Response(await zip.generateAsync({ type: "nodebuffer" }), {
         headers: {
