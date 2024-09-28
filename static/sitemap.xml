@@ -1,0 +1,12 @@
+<urlset>
+  <url>
+    <loc>https://media.j3rzy.dev/</loc>
+    <changefreq>always</changefreq>
+    <priority>1</priority>
+  </url>
+  <url>
+    <loc>https://media.j3rzy.dev/account</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+</urlset>

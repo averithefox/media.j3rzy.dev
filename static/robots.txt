@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://media.j3rzy.dev/sitemap.xml

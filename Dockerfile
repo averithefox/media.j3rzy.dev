@@ -1,19 +1,35 @@
-FROM node:20-alpine
-
+FROM oven/bun:latest AS base
 WORKDIR /app
 
-COPY package*.json ./
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-RUN npm install
+RUN mkdir -p /temp/prod
+COPY package.json bun.lockb /temp/prod/
+RUN cd /temp/prod && bun install --frozen-lockfile --production
 
+FROM base as prerelease
+COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-RUN npx prisma generate
+ENV NODE_ENV=production
+RUN bun prisma generate
+RUN bun run build
 
-RUN npm run build
+FROM base AS release
+COPY --from=install /temp/prod/node_modules node_modules
+COPY --from=prerelease /app/build .
+COPY --from=prerelease /app/package.json .
 
-RUN addgroup --system --gid 1001 postgres
+COPY --from=prerelease /app/prisma prisma
+COPY ./static static
 
+RUN ls -la
+
+RUN bun prisma generate
+
+USER bun
 EXPOSE 3000
-
-CMD ["npm", "run", "start"]
+CMD ["bun", "index.js"]

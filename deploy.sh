@@ -24,12 +24,12 @@ check_dot_env()
     touch .env
     {
       echo "AUTH_SECRET=$(openssl rand -base64 33)"
-      echo 'NEXTAUTH_URL='
+      echo 'AUTH_URL='
       echo 'POSTGRES_USER='
       echo 'POSTGRES_PASSWORD='
     } >> .env
-    if [ -f 'auth.config.ts' ]; then
-      auth_providers=$(grep 'providers:' auth.config.ts | sed 's/.*providers: //' | sed 's/,$//' | sed 's/\[//;s/\]//;')
+    if [ -f 'src/auth.ts' ]; then
+      auth_providers=$(grep 'providers:' src/auth.ts | sed 's/.*providers: //' | sed 's/,$//' | sed 's/\[//;s/\]//;')
       IFS=',' read -ra auth_providers_array <<< "$auth_providers"
       for provider in "${auth_providers_array[@]}"; do
         provider=$(echo "$provider" | xargs)
@@ -76,11 +76,11 @@ check_uploads_dir
 check_dot_env
 check_docker
 
-if ! docker ps --format '{{.Names}}' | grep -qE 'mediaj3rzydev_nextjs_1|mediaj3rzydev_db_1'; then
+if ! docker ps --format '{{.Names}}' | grep -qE 'mediaj3rzydev_svelte_1|mediaj3rzydev_db_1'; then
   docker-compose up -d
 else
-  docker-compose build nextjs
-  docker-compose up -d nextjs
+  docker-compose build svelte
+  docker-compose up -d svelte
 fi
 
 docker system prune -f

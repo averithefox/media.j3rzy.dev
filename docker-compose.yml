@@ -1,5 +1,5 @@
 services:
-  nextjs:
+  svelte:
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,7 +19,7 @@ services:
     volumes:
       - uploads_data:/app/uploads
     command: >
-      sh -c "npx prisma db push && npm run start"
+      sh -c "bun prisma db push && bun index.js"
     restart: always
 
   db:
