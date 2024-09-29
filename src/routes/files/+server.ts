@@ -158,11 +158,3 @@ export const DELETE: RequestHandler = async (event) =>
     return Response.json({ success: false, error: e.message }, { status: 500 });
   }
 };
-
-export const OPTIONS: RequestHandler = async () => new Response(null, {
-  headers: {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "*",
-  },
-});

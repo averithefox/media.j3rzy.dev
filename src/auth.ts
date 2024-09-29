@@ -5,6 +5,7 @@ import { db } from "$lib/server/db";
 import type { JWT } from "@auth/core/jwt";
 import type { AdapterSession, AdapterUser } from "@auth/core/adapters";
 import type { User } from "@prisma/client";
+import { dev } from "$app/environment";
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
   callbacks: {
@@ -51,5 +52,5 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
   },
   trustHost: true,
   providers: [ Discord ],
-  debug: true,
+  useSecureCookies: !dev,
 });
