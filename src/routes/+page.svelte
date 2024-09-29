@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Session } from "@auth/sveltekit";
   import type { FileObject } from "$lib/types";
 
   import DropOverlay from "$components/drop-overlay.svelte";
