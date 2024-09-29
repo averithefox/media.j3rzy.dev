@@ -1,7 +1,7 @@
 services:
   svelte:
     container_name: svelte
-    image: j3rzy/svelte:latest
+    image: j3rzy/svelte:alpha
     build:
       context: .
       dockerfile: Dockerfile
