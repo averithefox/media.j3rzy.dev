@@ -76,7 +76,7 @@ check_uploads_dir
 check_dot_env
 check_docker
 
-if ! docker ps --format '{{.Names}}' | grep -qE 'mediaj3rzydev_svelte_1|mediaj3rzydev_db_1'; then
+if ! docker ps --format '{{.Names}}' | grep -qE 'svelte|db'; then
   docker-compose up -d
 else
   docker-compose build svelte
