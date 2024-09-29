@@ -49,6 +49,5 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
   session: {
     strategy: "jwt"
   },
-  trustHost: true,
   providers: [ Discord ]
 });
