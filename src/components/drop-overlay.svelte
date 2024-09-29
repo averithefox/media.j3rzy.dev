@@ -1,7 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
+  import { page } from "$app/stores";
 
   import FileIcon from "$components/icons/file.svelte";
+
+  $: canUpload = $page.data.session?.user.role === "ADMIN";
 
   const upload = async (fileList: FileList | null) =>
   {
@@ -47,8 +50,6 @@
 
     return () => controller.abort();
   });
-
-  export let canUpload: boolean = false;
 </script>
 
 <div
@@ -77,7 +78,7 @@
       for="file"
       class="fixed bottom-5 right-5 bg-[#1c1e26] shadow-md rounded-full cursor-pointer w-10 h-10 flex items-center justify-center pointer-events-auto group"
     >
-      <FileIcon class="transition-all duration-200 text-white group-hover:rotate-12" />
+      <FileIcon class="transition-all duration-200 text-white group-hover:rotate-12"/>
     </label>
   {/if}
 </div>
