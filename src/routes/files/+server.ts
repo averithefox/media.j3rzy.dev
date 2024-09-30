@@ -7,8 +7,8 @@ import { fileTypeFromBuffer } from "file-type";
 import * as fs from "node:fs/promises";
 import { basePath } from "$lib/server";
 
-const isAuthorized = async (req: Request, session: Session | null) =>
-  session?.user?.role === "ADMIN" || await db.apiKey.findFirst({
+const isAuthorized = async ( req: Request, session: Session | null ) =>
+  session?.user?.role === "ADMIN" || (await db.apiKey.findFirst({
     where: {
       key: req.headers.get("Authorization")?.replace(/^Bearer /, ""),
       OR: [
@@ -16,16 +16,17 @@ const isAuthorized = async (req: Request, session: Session | null) =>
         { expiresAt: { gt: new Date() } },
       ],
     },
-  }) !== null;
+    include: { user: true },
+  }))?.user.role === "ADMIN";
 
-const toFileObject = ({ mimeType, filename }: { mimeType: string, filename: string }) => ({
+const toFileObject = ( { mimeType, filename }: { mimeType: string, filename: string } ) => ({
   name: filename,
   type: mimeType,
   rawUrl: new URL(`/raw/${encodeURI(filename)}`, basePath).href,
   url: new URL(`/${encodeURI(filename)}`, basePath).href,
 });
 
-export const GET: RequestHandler = async (event) =>
+export const GET: RequestHandler = async ( event ) =>
 {
   const { searchParams } = new URL(event.request.url);
   
@@ -49,14 +50,14 @@ export const GET: RequestHandler = async (event) =>
       
       zip.file("metadata.json", JSON.stringify({
         "date": new Date().toISOString(),
-        "files": fileRecords
+        "files": fileRecords,
       }, null, 2));
       
       return new Response(await zip.generateAsync({ type: "nodebuffer" }), {
         headers: {
           "Content-Type": "application/zip",
           "Content-Disposition": `attachment; filename="files.zip"`,
-        }
+        },
       });
     }
     
@@ -67,7 +68,7 @@ export const GET: RequestHandler = async (event) =>
   }
 };
 
-export const POST: RequestHandler = async (event) =>
+export const POST: RequestHandler = async ( event ) =>
 {
   try
   {
@@ -85,7 +86,7 @@ export const POST: RequestHandler = async (event) =>
     if ( !files.every(file => file instanceof File) )
       return Response.json({ success: false, error: "Invalid file(s)" }, { status: 400 });
     
-    const data = await Promise.all(files.map(async (file) =>
+    const data = await Promise.all(files.map(async ( file ) =>
     {
       const buffer = await file.arrayBuffer();
       const type = await fileTypeFromBuffer(buffer);
@@ -100,23 +101,23 @@ export const POST: RequestHandler = async (event) =>
     await fs.mkdir(path.join(process.cwd(), "uploads"), { recursive: true });
     
     const existingFilesData = await db.file.findMany();
-    const uniqueData = data.filter(({ hash }) => !existingFilesData.some(({ hash: existingHash }) => hash === existingHash));
+    const uniqueData = data.filter(( { hash } ) => !existingFilesData.some(( { hash: existingHash } ) => hash === existingHash));
     
     for ( let datum of uniqueData )
     {
-      const existingFile = existingFilesData.find(({ filename }) => filename === datum.filename);
+      const existingFile = existingFilesData.find(( { filename } ) => filename === datum.filename);
       if ( existingFile )
         datum.filename = datum.filename.replace(/(\.[^.]+)$/, `-${Math.random().toString(36).substring(2, 6)}$1`);
     }
     
-    await db.file.createMany({ data: uniqueData.map(({ buffer, ...data }) => data) });
+    await db.file.createMany({ data: uniqueData.map(( { buffer, ...data } ) => data) });
     
     const existingFiles = await fs.readdir(path.join(process.cwd(), "uploads"));
-    const missingFiles = uniqueData.map(({ hash }) => hash).filter((filename) => !existingFiles.includes(filename));
+    const missingFiles = uniqueData.map(( { hash } ) => hash).filter(( filename ) => !existingFiles.includes(filename));
     
-    await Promise.all(missingFiles.map(async (filename) =>
+    await Promise.all(missingFiles.map(async ( filename ) =>
     {
-      const file = uniqueData.find(({ hash }) => hash === filename)!;
+      const file = uniqueData.find(( { hash } ) => hash === filename)!;
       await Bun.write(path.join(process.cwd(), "uploads", filename), file.buffer);
     }));
     
@@ -130,7 +131,7 @@ export const POST: RequestHandler = async (event) =>
   }
 };
 
-export const DELETE: RequestHandler = async (event) =>
+export const DELETE: RequestHandler = async ( event ) =>
 {
   try
   {
