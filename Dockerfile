@@ -1,16 +1,6 @@
 FROM oven/bun:latest AS base
 WORKDIR /app
 
-ARG NODE_ENV
-ARG ORIGIN
-ARG PORT
-ARG HOST
-
-ENV NODE_ENV=${NODE_ENV}
-ENV ORIGIN=${ORIGIN}
-ENV PORT=${PORT}
-ENV HOST=${HOST}
-
 FROM base AS install
 RUN mkdir -p /temp/dev
 COPY package.json bun.lockb /temp/dev/
