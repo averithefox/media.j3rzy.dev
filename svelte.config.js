@@ -17,6 +17,9 @@ const config = {
     alias: {
       "$components": "./src/components",
     }
+  },
+  compilerOptions: {
+    warningFilter: ( warning ) => warning.code !== "element_invalid_self_closing_tag"
   }
 };
 
