@@ -1,10 +1,9 @@
 <script lang="ts">
-  import type { File } from "@prisma/client";
   import { MetaTags } from "svelte-meta-tags";
+  import { page } from "$app/stores";
 
-  export let data: { file: File | null, basePath: string };
-  let { file, basePath } = data;
-  let rawUrl = new URL(`/raw/${file?.filename}`, basePath).href;
+  let { file } = $page.data;
+  let rawUrl = new URL(`/raw/${file?.filename}`, $page.url.origin).href;
 </script>
 
 {#if file}
