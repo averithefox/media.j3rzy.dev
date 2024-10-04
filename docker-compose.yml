@@ -15,9 +15,6 @@ services:
       PORT: 3000
       HOST: 0.0.0.0
       BODY_SIZE_LIMIT: 1073741824
-      PROTOCOL_HEADER: x-forwarded-proto
-      HOST_HEADER: x-forwarded-host
-      ADDRESS_HEADER: x-forwarded-for
     depends_on:
       db:
         condition: service_healthy
