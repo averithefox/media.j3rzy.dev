@@ -83,4 +83,4 @@ else
   docker-compose up -d svelte
 fi
 
-docker system prune -f
+#docker system prune -f
