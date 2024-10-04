@@ -2,9 +2,9 @@
   import type { File } from "@prisma/client";
   import { MetaTags } from "svelte-meta-tags";
 
-  export let data: { file: File | null, basePath: string };
-  let { file, basePath } = data;
-  let rawUrl = new URL(`/raw/${file?.filename}`, basePath).href;
+  export let data: { file: File | null, origin: string };
+  let { file, origin } = data;
+  let rawUrl = new URL(`/raw/${file?.filename}`, origin).href;
 </script>
 
 {#if file}

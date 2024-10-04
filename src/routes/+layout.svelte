@@ -4,8 +4,7 @@
 
   import "../app.css";
 
-  export let data: { basePath: string };
-  let { basePath } = data;
+  let { origin } = $page.data;
 </script>
 
 {#if $page.url.pathname.split("/").filter(Boolean).length !== 1}
@@ -13,16 +12,16 @@
     title="Files"
     titleTemplate="%s :3"
     description="CDN or something, idk"
-    canonical={basePath}
+    canonical={origin}
     openGraph={{
       type: 'website',
-      url: basePath,
+      url: origin,
       title: 'Meow :3',
       description: 'CDN or something, idk',
       siteName: 'Hai :3',
       images: [
         {
-          url: new URL('og-image.jpg', basePath).href,
+          url: new URL('og-image.jpg', origin).href,
           width: 1600,
           height: 1372,
           alt: 'Og Image Alt'
@@ -35,7 +34,7 @@
       cardType: 'summary_large_image',
       title: 'Meow :3',
       description: 'CDN or something, idk',
-      image: new URL('og-image.jpg', basePath).href
+      image: new URL('og-image.jpg', origin).href
     }}
   />
 {/if}

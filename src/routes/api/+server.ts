@@ -2,13 +2,13 @@ import type { RequestHandler } from "./$types";
 import { db } from "$lib/server/db";
 import { randomUUID } from "crypto";
 
-export const GET: RequestHandler = async (event) =>
+export const GET: RequestHandler = async ( event ) =>
 {
   try
   {
     const session = await event.locals.auth();
     
-    if ( session?.user.role !== "ADMIN" )
+    if ( !session )
       return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
     
     const keys = await db.apiKey.findMany({
@@ -23,7 +23,7 @@ export const GET: RequestHandler = async (event) =>
     
     return Response.json({
       success: true,
-      data: keys.map(({ key, expiresAt, createdAt }) => ({
+      data: keys.map(( { key, expiresAt, createdAt } ) => ({
         key, expiresAt, createdAt,
       })),
     });
@@ -33,20 +33,20 @@ export const GET: RequestHandler = async (event) =>
   }
 };
 
-export const POST: RequestHandler = async (event) =>
+export const POST: RequestHandler = async ( event ) =>
 {
   try
   {
     const session = await event.locals.auth();
     
-    if ( session?.user.role !== "ADMIN" )
+    if ( !session )
       return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
     
     const { key, expiresAt, createdAt } = await db.apiKey.create({
       data: {
         userId: session.user.id!,
-        key: randomUUID()
-      }
+        key: randomUUID(),
+      },
     });
     
     return Response.json({
@@ -58,13 +58,13 @@ export const POST: RequestHandler = async (event) =>
   }
 };
 
-export const DELETE: RequestHandler = async (event) =>
+export const DELETE: RequestHandler = async ( event ) =>
 {
   try
   {
     const session = await event.locals.auth();
     
-    if ( session?.user.role !== "ADMIN" )
+    if ( !session )
       return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
     
     const { key } = await event.request.json();
@@ -72,7 +72,7 @@ export const DELETE: RequestHandler = async (event) =>
     if ( !key )
       return Response.json({ success: false, error: "Missing key" }, { status: 400 });
     
-    const keyRecord = await db.apiKey.findUnique({ where: { key } });
+    const keyRecord = await db.apiKey.findFirst({ where: { AND: [ { key }, { userId: session.user.id } ] } });
     
     if ( !keyRecord )
       return Response.json({ success: false, error: "Invalid key" }, { status: 400 });

@@ -5,7 +5,6 @@ import JSZip from "jszip";
 import * as path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "node:fs/promises";
-import { basePath } from "$lib/server";
 
 const isAuthorized = async ( req: Request, session: Session | null ) =>
   session?.user?.role === "ADMIN" || (await db.apiKey.findFirst({
@@ -19,23 +18,26 @@ const isAuthorized = async ( req: Request, session: Session | null ) =>
     include: { user: true },
   }))?.user.role === "ADMIN";
 
-const toFileObject = ( { mimeType, filename }: { mimeType: string, filename: string } ) => ({
+const toFileObject = (
+  { mimeType, filename }: { mimeType: string, filename: string },
+  { origin }: URL,
+) => ({
   name: filename,
   type: mimeType,
-  rawUrl: new URL(`/raw/${encodeURI(filename)}`, basePath).href,
-  url: new URL(`/${encodeURI(filename)}`, basePath).href,
+  rawUrl: new URL(`/raw/${encodeURI(filename)}`, origin).href,
+  url: new URL(`/${encodeURI(filename)}`, origin).href,
 });
 
 export const GET: RequestHandler = async ( event ) =>
 {
-  const { searchParams } = new URL(event.request.url);
+  const url = new URL(event.request.url);
   
   try
   {
     const fileRecords = await db.file.findMany();
     
     if (
-      searchParams.has("archive") &&
+      url.searchParams.has("archive") &&
       await isAuthorized(event.request, await event.locals.auth())
     )
     {
@@ -61,7 +63,7 @@ export const GET: RequestHandler = async ( event ) =>
       });
     }
     
-    return Response.json({ success: true, data: fileRecords.map(toFileObject) });
+    return Response.json({ success: true, data: fileRecords.map(obj => toFileObject(obj, url)) });
   } catch ( e: any )
   {
     return Response.json({ success: false, error: e.message }, { status: 500 });
@@ -123,7 +125,7 @@ export const POST: RequestHandler = async ( event ) =>
     
     return Response.json({
       success: true,
-      data: uniqueData.map(toFileObject),
+      data: uniqueData.map(obj => toFileObject(obj, new URL(event.request.url))),
     });
   } catch ( e: any )
   {
