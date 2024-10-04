@@ -6,16 +6,22 @@ import * as path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "node:fs/promises";
 
-const isAuthorized = async (req: Request, session: Session | null) =>
-  session?.user?.role === "ADMIN" || await db.apiKey.findFirst({
+const isAuthorized = async ( req: Request, session: Session | null ) =>
+{
+  const key = req.headers.get("Authorization")?.replace(/^Bearer /, "");
+  const keyRecord = key ? await db.apiKey.findUnique({
     where: {
-      key: req.headers.get("Authorization")?.replace(/^Bearer /, ""),
+      key,
       OR: [
         { expiresAt: null },
         { expiresAt: { gt: new Date() } },
       ],
     },
-  }) !== null;
+    include: { user: true }
+  }) : null;
+  
+  return session?.user?.role === "ADMIN" || ( keyRecord?.user && keyRecord.user.role === "ADMIN" );
+};
 
 const toFileObject = (
   { mimeType, filename }: { mimeType: string, filename: string },
@@ -27,17 +33,25 @@ const toFileObject = (
   url: new URL(`/${encodeURI(filename)}`, origin).href,
 });
 
-export const GET: RequestHandler = async (event) =>
+export const GET: RequestHandler = async ( event ) =>
 {
   const url = new URL(event.request.url);
+  const authorized = await isAuthorized(event.request, await event.locals.auth());
   
   try
   {
-    const fileRecords = await db.file.findMany();
+    const fileRecords = await db.file.findMany({
+      where: {
+        OR: [
+          { "private": false },
+          { "private": authorized }
+        ]
+      }
+    });
     
     if (
       url.searchParams.has("archive") &&
-      await isAuthorized(event.request, await event.locals.auth())
+      authorized
     )
     {
       const zip = new JSZip();
@@ -69,7 +83,7 @@ export const GET: RequestHandler = async (event) =>
   }
 };
 
-export const POST: RequestHandler = async (event) =>
+export const POST: RequestHandler = async ( event ) =>
 {
   try
   {
@@ -80,6 +94,7 @@ export const POST: RequestHandler = async (event) =>
     
     const formData = await event.request.formData();
     const files = formData.getAll("file") as File[];
+    const arePrivate = formData.has("private");
     
     if ( files.length === 0 )
       return Response.json({ success: false, error: "No files provided" }, { status: 400 });
@@ -87,7 +102,7 @@ export const POST: RequestHandler = async (event) =>
     if ( !files.every(file => file instanceof File) )
       return Response.json({ success: false, error: "Invalid file(s)" }, { status: 400 });
     
-    const data = await Promise.all(files.map(async (file) =>
+    const data = await Promise.all(files.map(async ( file ) =>
     {
       const buffer = await file.arrayBuffer();
       const type = await fileTypeFromBuffer(buffer);
@@ -95,6 +110,7 @@ export const POST: RequestHandler = async (event) =>
         filename: file.name,
         hash: new Bun.CryptoHasher("sha256").update(buffer).digest("hex"),
         mimeType: file.type === "application/octet-stream" && type ? type.mime : file.type,
+        "private": arePrivate,
         buffer,
       };
     }));
@@ -102,23 +118,23 @@ export const POST: RequestHandler = async (event) =>
     await fs.mkdir(path.join(process.cwd(), "uploads"), { recursive: true });
     
     const existingFilesData = await db.file.findMany();
-    const uniqueData = data.filter(({ hash }) => !existingFilesData.some(({ hash: existingHash }) => hash === existingHash));
+    const uniqueData = data.filter(( { hash } ) => !existingFilesData.some(( { hash: existingHash } ) => hash === existingHash));
     
     for ( let datum of uniqueData )
     {
-      const existingFile = existingFilesData.find(({ filename }) => filename === datum.filename);
+      const existingFile = existingFilesData.find(( { filename } ) => filename === datum.filename);
       if ( existingFile )
         datum.filename = datum.filename.replace(/(\.[^.]+)$/, `-${Math.random().toString(36).substring(2, 6)}$1`);
     }
     
-    await db.file.createMany({ data: uniqueData.map(({ buffer, ...data }) => data) });
+    await db.file.createMany({ data: uniqueData.map(( { buffer, ...data } ) => data) });
     
     const existingFiles = await fs.readdir(path.join(process.cwd(), "uploads"));
-    const missingFiles = uniqueData.map(({ hash }) => hash).filter((filename) => !existingFiles.includes(filename));
+    const missingFiles = uniqueData.map(( { hash } ) => hash).filter(( filename ) => !existingFiles.includes(filename));
     
-    await Promise.all(missingFiles.map(async (filename) =>
+    await Promise.all(missingFiles.map(async ( filename ) =>
     {
-      const file = uniqueData.find(({ hash }) => hash === filename)!;
+      const file = uniqueData.find(( { hash } ) => hash === filename)!;
       await Bun.write(path.join(process.cwd(), "uploads", filename), file.buffer);
     }));
     
@@ -132,7 +148,7 @@ export const POST: RequestHandler = async (event) =>
   }
 };
 
-export const DELETE: RequestHandler = async (event) =>
+export const DELETE: RequestHandler = async ( event ) =>
 {
   try
   {
