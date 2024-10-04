@@ -13,7 +13,6 @@ const config = {
     adapter: adapter({
       dynamic_origin: true,
     }),
-    csrf: { checkOrigin: false }, // CSRF protection is disabled
     alias: {
       "$components": "./src/components",
     }
