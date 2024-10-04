@@ -76,7 +76,7 @@ check_uploads_dir
 check_dot_env
 check_docker
 
-if ! docker ps --format '{{.Names}}' | grep -qE 'svelte|db'; then
+if ! docker ps --format '{{.Names}}' | grep -qE 'media-svelte|media-db'; then
   docker-compose up -d
 else
   docker-compose build svelte
