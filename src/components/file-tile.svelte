@@ -70,7 +70,7 @@
   {#if file && mimeGroup}
     {#if mimeGroup === "image"}
       <img
-        src={file.rawUrl}
+        src={new URL(`image/${encodeURI(file.name)}?w=200`, $page.url.origin).href}
         alt={file.name}
         width="200"
         height="200"
