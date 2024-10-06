@@ -6,8 +6,11 @@ interface IFileObject
   url: string
 }
 
-export type FileObject<Authorized extends boolean = false> = IFileObject & (
-  Authorized extends true ?
+/**
+ * @template T Whether the file object includes `private` property.
+ */
+export type FileObject<T extends boolean = false> = IFileObject & (
+  T extends true ?
     { private: boolean } :
     {}
   );
@@ -26,7 +29,13 @@ interface IErrorResponse
   data?: never;
 }
 
-export type EndpointResponse<T = any> = ISuccessResponse<T> | IErrorResponse;
+/**
+ * @template T The type of the data to be returned.
+ * @template V Whether to include the data in the response.
+ */
+export type EndpointResponse<T = any, V extends boolean = true> =
+  (ISuccessResponse<T> & (V extends true ? {} : { data?: T }))
+  | IErrorResponse;
 
 export interface ApiKey
 {

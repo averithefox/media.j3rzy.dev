@@ -1,20 +1,37 @@
 <script lang="ts">
   import type { FileObject } from "$lib/types";
-  import Link from "$components/icons/link.svelte";
-  import Copy from "$components/icons/copy.svelte";
-  import TrashBin from "$components/icons/trash-bin.svelte";
   import { createEventDispatcher } from "svelte";
   import { page } from "$app/stores";
 
+  import Link from "$components/icons/link.svelte";
+  import Copy from "$components/icons/copy.svelte";
+  import TrashBin from "$components/icons/trash-bin.svelte";
+  import EyeSlash from "$components/icons/eye-slash.svelte";
+  import Eye from "$components/icons/eye.svelte";
+
   const dispatch = createEventDispatcher();
 
-  export let file: FileObject;
+  export let file: FileObject<true>;
   $: mimeGroup = file?.type.split("/")[0];
 </script>
 
 <div
   class="relative overflow-hidden group rounded-md max-w-[200px] max-h-[200px] hover:overflow-visible hover:z-30"
 >
+  {#if "private" in file}
+    <button
+      data-private="{file.private}"
+      class="absolute right-2 top-1 transition-all duration-200 data-[private=true]:text-red-600 data-[private=false]:text-green-600 data-[private=false]:opacity-0 data-[private=false]:group-hover:opacity-100"
+      title="{file.private ? 'Private' : 'Public'}"
+      on:click={() => dispatch("private", file.name)}
+    >
+      {#if file.private}
+        <EyeSlash/>
+      {:else}
+        <Eye/>
+      {/if}
+    </button>
+  {/if}
   <div
     class="opacity-0 group-hover:opacity-75 transition-all duration-300 transform left-1/2 -translate-x-1/2 bottom-1/2 translate-y-1/2 bg-black/50 rounded-md p-1 gap-1 absolute grid grid-cols-2 flex-row justify-center"
     style="z-index: 69;"

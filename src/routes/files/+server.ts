@@ -21,10 +21,10 @@ const isAuthorized = async ( req: Request, session: Session | null ) =>
     include: { user: true }
   }) : null;
   
-  return session?.user?.role === "ADMIN" || !!( keyRecord?.user && keyRecord.user.role === "ADMIN" );
+  return session?.user?.role === "ADMIN" || !!(keyRecord?.user && keyRecord.user.role === "ADMIN");
 };
 
-const toFileObject = <T extends boolean = false>(
+const toFileObject = <T extends boolean = false> (
   { mimeType, filename, private: isPrivate }: { mimeType: string, filename: string, "private": boolean },
   { origin }: URL,
   authorized: T = false as T
@@ -79,7 +79,10 @@ export const GET: RequestHandler = async ( event ) =>
       });
     }
     
-    return Response.json({ success: true, data: fileRecords.map(obj => toFileObject<typeof authorized>(obj, url, authorized)) });
+    return Response.json({
+      success: true,
+      data: fileRecords.map(obj => toFileObject<typeof authorized>(obj, url, authorized))
+    });
   } catch ( e: any )
   {
     return Response.json({ success: false, error: e.message }, { status: 500 });
@@ -90,8 +93,7 @@ export const POST: RequestHandler = async ( event ) =>
 {
   try
   {
-    const session = await event.locals.auth();
-    const authorized = await isAuthorized(event.request, session);
+    const authorized = await isAuthorized(event.request, await event.locals.auth());
     
     if ( !authorized )
       return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -175,6 +177,53 @@ export const DELETE: RequestHandler = async ( event ) =>
       await fs.rm(filePath);
     
     return Response.json({ success: true });
+  } catch ( e: any )
+  {
+    return Response.json({ success: false, error: e.message }, { status: 500 });
+  }
+};
+
+export const PATCH: RequestHandler = async ( event ) =>
+{
+  try
+  {
+    const authorized = await isAuthorized(event.request, await event.locals.auth());
+    
+    if ( !authorized )
+      return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    
+    const data = await event.request.json();
+    const { filename } = data;
+    
+    if ( !data || !filename )
+      return Response.json({ success: false, error: "No filename provided" }, { status: 400 });
+    
+    const fileRecord = await db.file.findUnique({ where: { filename } });
+    
+    if ( !fileRecord )
+      return Response.json({ success: false, error: "File not found" }, { status: 404 });
+    
+    /** Valid types and their values -> [name, type, mapTo?][] */
+    const valid: [string, string, string?][] = [ [ "private", "boolean" ], [ "name", "string", "filename" ] ];
+    
+    for ( const key in data )
+    {
+      const i = valid.findIndex(( [ name ] ) => name === key);
+      if ( i === -1 ) delete data[key];
+      else if ( typeof data[key] !== valid[i][1] ) delete data[key];
+      else if ( valid[i][2] )
+      {
+        data[valid[i][2]] = data[key];
+        delete data[key];
+      }
+    }
+    
+    const updatedFileRecord = await db.file.update({
+      where: { filename },
+      data
+    });
+    
+    return Response.json({ success: true, data: toFileObject<typeof authorized>(updatedFileRecord, new URL(event.request.url), authorized) });
   } catch ( e: any )
   {
     return Response.json({ success: false, error: e.message }, { status: 500 });

@@ -18,7 +18,22 @@
     else alert(json.error);
   };
 
-  let { success, error, data: files = [] } = $page.data.files as EndpointResponse<FileObject[]>;
+  const togglePrivate = async (filename: string) =>
+  {
+    const i = files.findIndex(f => f.name === filename);
+    const file = files[i];
+    if ( i === -1 ) return alert("File not found!");
+    const res = await fetch("/files", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", },
+      body: JSON.stringify({ filename, private: !file.private }),
+    });
+    const json: EndpointResponse<FileObject<true>> = await res.json();
+    if ( json.success ) files[i] = json.data;
+    else alert(json.error);
+  };
+
+  let { success, error, data: files = [] } = $page.data.files as EndpointResponse<FileObject<true>[]>;
 </script>
 
 <DropOverlay on:upload={e => files = [...files, ...e.detail]}/>
@@ -30,7 +45,11 @@
       style="grid-template-columns: repeat(auto-fit, minmax(200px, max-content));"
     >
       {#each files as file (file.name)}
-        <FileTile {file} on:delete={(e) => deleteFile(e.detail)} />
+        <FileTile
+          {file}
+          on:delete={(e) => deleteFile(e.detail)}
+          on:private={(e) => togglePrivate(e.detail)}
+        />
       {/each}
     </main>
   {:else}
