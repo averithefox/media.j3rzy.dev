@@ -6,7 +6,7 @@ export default defineConfig({
     port: 3000,
     cors: {
       origin: /media\.j3rzy\.dev/i,
-      methods: ["GET", "POST", "PUT", "DELETE"],
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
       allowedHeaders: ["Authorization", "Content-Type"],
     }
   },
