@@ -70,7 +70,7 @@
   {#if file && mimeGroup}
     {#if mimeGroup === "image"}
       <img
-        src={new URL(`image/${encodeURI(file.name)}?w=200`, $page.url.origin).href}
+        src={file.type.split("/")[1] === "gif" ? file.rawUrl : new URL(`image/${encodeURI(file.name)}?w=200`, $page.url.origin).href}
         alt={file.name}
         width="200"
         height="200"

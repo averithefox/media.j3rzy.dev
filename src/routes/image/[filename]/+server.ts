@@ -13,8 +13,8 @@ export const GET: RequestHandler = async ( event ) =>
   const width = 200; //new URL(event.request.url).searchParams.get("w");
   const mimeType = response.headers.get("Content-Type")!;
   
-  if (mimeType.split("/")[0] !== "image" || mimeType.split("/")[1] === "gif")
-    return response;
+  if ( mimeType.split("/")[0] !== "image" || mimeType.split("/")[1] === "gif" )
+    return new Response("Invalid file type", { status: 400, headers: { "Content-Type": "text/plain" } });
   
   const resultBuffer = await sharp(buffer).resize(width).toFormat("webp").toBuffer();
   return new Response(resultBuffer, {
