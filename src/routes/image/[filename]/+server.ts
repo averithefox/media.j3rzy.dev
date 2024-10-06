@@ -21,6 +21,7 @@ export const GET: RequestHandler = async ( event ) =>
     headers: {
       "Content-Type": "image/webp",
       "Content-Length": resultBuffer.byteLength.toString(),
+      "Cache-Control": "public, max-age=31536000, immutable"
     }
   });
 };
