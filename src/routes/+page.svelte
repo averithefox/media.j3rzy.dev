@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { EndpointResponse, FileObject } from "$lib/types";
+  import { page } from "\$app/stores";
 
   import DropOverlay from "$components/drop-overlay.svelte";
   import FileTile from "$components/file-tile.svelte";
@@ -17,8 +18,7 @@
     else alert(json.error);
   };
 
-  export let data: { files: EndpointResponse<FileObject[]> };
-  let { files: { success, error, data: files = [] } } = data;
+  let { success, error, data: files = [] } = $page.data.files as EndpointResponse<FileObject[]>;
 </script>
 
 <DropOverlay on:upload={e => files = [...files, ...e.detail]}/>

@@ -15,7 +15,7 @@ export type FileObject<Authorized extends boolean = false> = IFileObject & (
 interface ISuccessResponse<T = any>
 {
   success: true;
-  data?: T;
+  data: T;
   error?: never;
 }
 
