@@ -10,13 +10,13 @@ export const GET: RequestHandler = async ( event ) =>
     return response;
   
   const buffer = Buffer.from(await (await response.blob()).arrayBuffer());
-  const width = new URL(event.request.url).searchParams.get("w");
+  const width = 200; //new URL(event.request.url).searchParams.get("w");
   const mimeType = response.headers.get("Content-Type")!;
   
   if (mimeType.split("/")[0] !== "image")
     return new Response("Not an image", { status: 400, headers: { "Content-Type": "text/plain" } });
   
-  const resultBuffer = await sharp(buffer).resize(width ? parseInt(width) : null).toFormat("webp").toBuffer();
+  const resultBuffer = await sharp(buffer).resize(width).toFormat("webp").toBuffer();
   return new Response(resultBuffer, {
     headers: {
       "Content-Type": "image/webp",
