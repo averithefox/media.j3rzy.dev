@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { FileObject } from "$lib/types";
+  import type { EndpointResponse, FileObject } from "$lib/types";
 
   import DropOverlay from "$components/drop-overlay.svelte";
   import FileTile from "$components/file-tile.svelte";
@@ -17,7 +17,7 @@
     else alert(json.error);
   };
 
-  export let data: { files: { success: boolean, data?: Array<FileObject>, error?: string } };
+  export let data: { files: EndpointResponse<FileObject[]> };
   let { files: { success, error, data: files = [] } } = data;
 </script>
 

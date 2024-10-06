@@ -5,6 +5,7 @@ import JSZip from "jszip";
 import * as path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "node:fs/promises";
+import type { FileObject } from "$lib/types";
 
 const isAuthorized = async ( req: Request, session: Session | null ) =>
 {
@@ -20,17 +21,19 @@ const isAuthorized = async ( req: Request, session: Session | null ) =>
     include: { user: true }
   }) : null;
   
-  return session?.user?.role === "ADMIN" || ( keyRecord?.user && keyRecord.user.role === "ADMIN" );
+  return session?.user?.role === "ADMIN" || !!( keyRecord?.user && keyRecord.user.role === "ADMIN" );
 };
 
-const toFileObject = (
-  { mimeType, filename }: { mimeType: string, filename: string },
-  { origin }: URL
-) => ({
+const toFileObject = <T extends boolean = false>(
+  { mimeType, filename, private: isPrivate }: { mimeType: string, filename: string, "private": boolean },
+  { origin }: URL,
+  authorized: T = false as T
+): FileObject<T> => ({
   name: filename,
   type: mimeType,
   rawUrl: new URL(`/raw/${encodeURI(filename)}`, origin).href,
   url: new URL(`/${encodeURI(filename)}`, origin).href,
+  ...(authorized ? { "private": isPrivate } : {}) as any
 });
 
 export const GET: RequestHandler = async ( event ) =>
@@ -76,7 +79,7 @@ export const GET: RequestHandler = async ( event ) =>
       });
     }
     
-    return Response.json({ success: true, data: fileRecords.map(obj => toFileObject(obj, url)) });
+    return Response.json({ success: true, data: fileRecords.map(obj => toFileObject<typeof authorized>(obj, url, authorized)) });
   } catch ( e: any )
   {
     return Response.json({ success: false, error: e.message }, { status: 500 });
@@ -88,8 +91,9 @@ export const POST: RequestHandler = async ( event ) =>
   try
   {
     const session = await event.locals.auth();
+    const authorized = await isAuthorized(event.request, session);
     
-    if ( !await isAuthorized(event.request, session) )
+    if ( !authorized )
       return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
     
     const formData = await event.request.formData();
@@ -140,7 +144,7 @@ export const POST: RequestHandler = async ( event ) =>
     
     return Response.json({
       success: true,
-      data: uniqueData.map(obj => toFileObject(obj, new URL(event.request.url))),
+      data: uniqueData.map(obj => toFileObject<typeof authorized>(obj, new URL(event.request.url), authorized)),
     });
   } catch ( e: any )
   {
