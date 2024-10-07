@@ -30,9 +30,11 @@ export const GET: RequestHandler = async (event) =>
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch ( e: any )
+  } catch ( e: unknown )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 });
+    if ( e instanceof Error )
+      return Response.json({ success: false, error: e.message }, { status: 500 });
+    return Response.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
   }
 };
 

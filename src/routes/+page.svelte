@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { EndpointResponse, FileObject } from "$lib/types";
-  import { page } from "\$app/stores";
+  import { page } from "$app/stores";
 
   import DropOverlay from "$components/drop-overlay.svelte";
   import FileTile from "$components/file-tile.svelte";

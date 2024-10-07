@@ -1,4 +1,4 @@
-interface IFileObject
+export interface IFileObject
 {
   name: string;
   type: string;
@@ -6,15 +6,15 @@ interface IFileObject
 }
 
 /**
- * @template T Whether the file object includes `private` property.
+ * @template V Whether the file object includes `private` property.
  */
-export type FileObject<T extends boolean = false> = IFileObject & (
-  T extends true ?
+export type FileObject<V extends boolean = false> = IFileObject & (
+  V extends true ?
     { private: boolean } :
-    {}
+    Record<string, never>
   );
 
-interface ISuccessResponse<T = any>
+interface ISuccessResponse<T = unknown>
 {
   success: true;
   data: T;
@@ -32,8 +32,8 @@ interface IErrorResponse
  * @template T The type of the data to be returned.
  * @template V Whether to include the data in the response.
  */
-export type EndpointResponse<T = any, V extends boolean = true> =
-  (ISuccessResponse<T> & (V extends true ? {} : { data?: T }))
+export type EndpointResponse<T = unknown, V extends boolean = true> =
+  (ISuccessResponse<T> & (V extends true ? Record<string, never> : { data?: T }))
   | IErrorResponse;
 
 export interface ApiKey

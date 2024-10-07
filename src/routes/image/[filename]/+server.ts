@@ -1,10 +1,11 @@
 import type { RequestHandler } from "./$types";
 import { GET as getFile } from "../../raw/[filename]/+server";
 import sharp from "sharp";
+import type { RequestEvent } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ( event ) =>
 {
-  const response = await getFile(event as any);
+  const response = await getFile(event as unknown as RequestEvent<{ filename: string }, "/raw/[filename]">);
   
   if ( response.status !== 200 )
     return response;

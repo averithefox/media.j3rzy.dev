@@ -17,7 +17,7 @@
       url: rawUrl,
       images: /^image\//.test(file.mimeType) ? [ { url: rawUrl } ] : undefined,
       audio: /^audio\//.test(file.mimeType) ? [ { url: rawUrl } ] : undefined,
-      videos: /^video\//.test(file.mimeType) ? [ { url: rawUrl } ] : undefined,
+      videos: /^video\//.test(file.mimeType) ? [ { url: rawUrl } ] : undefined
     }}
   />
 {:else}

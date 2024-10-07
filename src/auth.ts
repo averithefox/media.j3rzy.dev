@@ -9,7 +9,7 @@ import { dev } from "$app/environment";
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
   callbacks: {
-    async session ({ token, session }: { token: JWT, session: { user: AdapterUser } & AdapterSession & Session })
+    async session( { token, session }: { token: JWT, session: { user: AdapterUser } & AdapterSession & Session } )
     {
       if ( token.sub && session.user )
         session.user.id = token.sub;
@@ -19,10 +19,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
       
       return session;
     },
-    async jwt (
-      { token, trigger, session }:
-        { token: JWT, trigger?: "signIn" | "update" | "signUp", session?: any },
-    ): Promise<JWT>
+    async jwt( { token }: { token: JWT } ): Promise<JWT>
     {
       if ( !token.sub )
         return token;
@@ -48,7 +45,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
   },
   adapter: PrismaAdapter(db),
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
   },
   trustHost: true,
   providers: [ Discord ],

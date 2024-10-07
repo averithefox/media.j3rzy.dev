@@ -2,7 +2,7 @@ import type { RequestHandler } from "./$types";
 import { db } from "$lib/server/db";
 import { randomUUID } from "crypto";
 
-export const GET: RequestHandler = async (event) =>
+export const GET: RequestHandler = async ( event ) =>
 {
   try
   {
@@ -23,17 +23,19 @@ export const GET: RequestHandler = async (event) =>
     
     return Response.json({
       success: true,
-      data: keys.map(({ key, expiresAt, createdAt }) => ({
+      data: keys.map(( { key, expiresAt, createdAt } ) => ({
         key, expiresAt, createdAt,
       })),
     });
-  } catch ( e: any )
+  } catch ( e: unknown )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 });
+    if ( e instanceof Error )
+      return Response.json({ success: false, error: e.message }, { status: 500 });
+    return Response.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
   }
 };
 
-export const POST: RequestHandler = async (event) =>
+export const POST: RequestHandler = async ( event ) =>
 {
   try
   {
@@ -45,20 +47,22 @@ export const POST: RequestHandler = async (event) =>
     const { key, expiresAt, createdAt } = await db.apiKey.create({
       data: {
         userId: session.user.id!,
-        key: randomUUID()
-      }
+        key: randomUUID(),
+      },
     });
     
     return Response.json({
       success: true, data: { key, expiresAt, createdAt },
     });
-  } catch ( e: any )
+  } catch ( e: unknown )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 });
+    if ( e instanceof Error )
+      return Response.json({ success: false, error: e.message }, { status: 500 });
+    return Response.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
   }
 };
 
-export const DELETE: RequestHandler = async (event) =>
+export const DELETE: RequestHandler = async ( event ) =>
 {
   try
   {
@@ -80,8 +84,10 @@ export const DELETE: RequestHandler = async (event) =>
     await db.apiKey.delete({ where: { key } });
     
     return Response.json({ success: true });
-  } catch ( e: any )
+  } catch ( e: unknown )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 });
+    if ( e instanceof Error )
+      return Response.json({ success: false, error: e.message }, { status: 500 });
+    return Response.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
   }
 };

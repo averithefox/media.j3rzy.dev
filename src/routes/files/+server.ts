@@ -5,7 +5,7 @@ import JSZip from "jszip";
 import * as path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "node:fs/promises";
-import type { FileObject } from "$lib/types";
+import type { FileObject, IFileObject } from "$lib/types";
 
 const isAuthorized = async ( req: Request, session: Session | null ) =>
 {
@@ -18,21 +18,38 @@ const isAuthorized = async ( req: Request, session: Session | null ) =>
         { expiresAt: { gt: new Date() } },
       ],
     },
-    include: { user: true }
+    include: { user: true },
   }) : null;
   
   return session?.user?.role === "ADMIN" || !!(keyRecord?.user && keyRecord.user.role === "ADMIN");
 };
 
-const toFileObject = <T extends boolean = false> (
-  { mimeType, filename, private: isPrivate, createdAt }: { mimeType: string, filename: string, "private": boolean, createdAt: Date },
-  authorized: T = false as T
-): FileObject<T> => ({
-  name: filename,
-  type: mimeType,
-  uploadedAt: createdAt.getTime(),
-  ...(authorized ? { "private": isPrivate } : {}) as any
-});
+const toFileObject = <T extends boolean = false>(
+  { mimeType, filename, private: isPrivate, createdAt }: {
+    mimeType: string;
+    filename: string;
+    "private": boolean;
+    createdAt: Date
+  },
+  authorized: T = false as T,
+): FileObject<T> =>
+{
+  const baseObject: IFileObject = {
+    name: filename,
+    type: mimeType,
+    uploadedAt: createdAt.getTime(),
+  };
+  
+  if ( authorized )
+  {
+    return {
+      ...baseObject,
+      private: isPrivate,
+    } as unknown as FileObject<T>;
+  }
+  
+  return baseObject as FileObject<T>;
+};
 
 export const GET: RequestHandler = async ( event ) =>
 {
@@ -45,9 +62,9 @@ export const GET: RequestHandler = async ( event ) =>
       where: {
         OR: [
           { "private": false },
-          { "private": authorized }
-        ]
-      }
+          { "private": authorized },
+        ],
+      },
     });
     
     if (
@@ -66,24 +83,26 @@ export const GET: RequestHandler = async ( event ) =>
       
       zip.file("metadata.json", JSON.stringify({
         "date": new Date().toISOString(),
-        "files": fileRecords
+        "files": fileRecords,
       }, null, 2));
       
       return new Response(await zip.generateAsync({ type: "nodebuffer" }), {
         headers: {
           "Content-Type": "application/zip",
           "Content-Disposition": `attachment; filename="files.zip"`,
-        }
+        },
       });
     }
     
     return Response.json({
       success: true,
-      data: fileRecords.map(obj => toFileObject<typeof authorized>(obj, authorized))
+      data: fileRecords.map(obj => toFileObject<typeof authorized>(obj, authorized)),
     });
-  } catch ( e: any )
+  } catch ( e: unknown )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 });
+    if ( e instanceof Error )
+      return Response.json({ success: false, error: e.message }, { status: 500 });
+    return Response.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
   }
 };
 
@@ -125,13 +144,14 @@ export const POST: RequestHandler = async ( event ) =>
     const existingFilesData = await db.file.findMany();
     const uniqueData = data.filter(( { hash } ) => !existingFilesData.some(( { hash: existingHash } ) => hash === existingHash));
     
-    for ( let datum of uniqueData )
+    for ( const datum of uniqueData )
     {
       const existingFile = existingFilesData.find(( { filename } ) => filename === datum.filename);
       if ( existingFile )
         datum.filename = datum.filename.replace(/(\.[^.]+)$/, `-${Math.random().toString(36).substring(2, 6)}$1`);
     }
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     await db.file.createMany({ data: uniqueData.map(( { buffer, ...data } ) => data) });
     
     const existingFiles = await fs.readdir(path.join(process.cwd(), "uploads"));
@@ -147,9 +167,11 @@ export const POST: RequestHandler = async ( event ) =>
       success: true,
       data: uniqueData.map(obj => toFileObject<typeof authorized>(obj, authorized)),
     });
-  } catch ( e: any )
+  } catch ( e: unknown )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 });
+    if ( e instanceof Error )
+      return Response.json({ success: false, error: e.message }, { status: 500 });
+    return Response.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
   }
 };
 
@@ -176,9 +198,11 @@ export const DELETE: RequestHandler = async ( event ) =>
       await fs.rm(filePath);
     
     return Response.json({ success: true });
-  } catch ( e: any )
+  } catch ( e: unknown )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 });
+    if ( e instanceof Error )
+      return Response.json({ success: false, error: e.message }, { status: 500 });
+    return Response.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
   }
 };
 
@@ -203,7 +227,7 @@ export const PATCH: RequestHandler = async ( event ) =>
       return Response.json({ success: false, error: "File not found" }, { status: 404 });
     
     /** Valid types and their values -> [name, type, mapTo?][] */
-    const valid: [string, string, string?][] = [ [ "private", "boolean" ], [ "name", "string", "filename" ] ];
+    const valid: [ string, string, string? ][] = [ [ "private", "boolean" ], [ "name", "string", "filename" ] ];
     
     for ( const key in data )
     {
@@ -219,12 +243,14 @@ export const PATCH: RequestHandler = async ( event ) =>
     
     const updatedFileRecord = await db.file.update({
       where: { filename },
-      data
+      data,
     });
     
     return Response.json({ success: true, data: toFileObject<typeof authorized>(updatedFileRecord, authorized) });
-  } catch ( e: any )
+  } catch ( e: unknown )
   {
-    return Response.json({ success: false, error: e.message }, { status: 500 });
+    if ( e instanceof Error )
+      return Response.json({ success: false, error: e.message }, { status: 500 });
+    return Response.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
   }
 };
