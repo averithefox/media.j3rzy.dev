@@ -37,7 +37,7 @@
     style="z-index: 69;"
   >
     <a
-      href={file.rawUrl}
+      href="/raw/{file.name}"
       target="_blank"
       class="cursor-pointer p-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-md"
       title="Open in new tab"
@@ -60,7 +60,7 @@
     {/if}
     <button
       class="p-1 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 rounded-md"
-      on:click={async () => await navigator.clipboard.writeText(file.url)}
+      on:click={async () => await navigator.clipboard.writeText(new URL(encodeURI(file.name), $page.url.origin).href)}
       title="Copy URL"
       aria-label="Copy URL"
     >
@@ -70,7 +70,7 @@
   {#if file && mimeGroup}
     {#if mimeGroup === "image"}
       <img
-        src={file.type.split("/")[1] === "gif" ? file.rawUrl : new URL(`image/${encodeURI(file.name)}?w=200`, $page.url.origin).href}
+        src={file.type.split("/")[1] === "gif" ? `/raw/${file.name}` : new URL(`image/${encodeURI(file.name)}?w=200`, $page.url.origin).pathname}
         alt={file.name}
         width="200"
         height="200"
@@ -85,14 +85,14 @@
         height="200"
         class="w-auto h-auto rounded-sm"
       >
-        <source src={file.rawUrl} type={file.type}>
-        <track src={file.rawUrl} kind="captions">
+        <source src="/raw/{file.name}" type={file.type}>
+        <track src="/raw/{file.name}" kind="captions">
         Your browser does not support the video tag.
       </video>
     {:else if mimeGroup === "audio"}
       <div class="flex items-center justify-center w-[200px] h-[100px]">
         <audio controls class="w-[200px]">
-          <source src={file.url} type={file.type}/>
+          <source src="/raw/{file.name}" type={file.type}/>
           Your browser does not support the audio element.
         </audio>
       </div>

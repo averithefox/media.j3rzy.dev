@@ -26,13 +26,10 @@ const isAuthorized = async ( req: Request, session: Session | null ) =>
 
 const toFileObject = <T extends boolean = false> (
   { mimeType, filename, private: isPrivate, createdAt }: { mimeType: string, filename: string, "private": boolean, createdAt: Date },
-  { origin }: URL,
   authorized: T = false as T
 ): FileObject<T> => ({
   name: filename,
   type: mimeType,
-  rawUrl: new URL(`/raw/${encodeURI(filename)}`, origin).href,
-  url: new URL(`/${encodeURI(filename)}`, origin).href,
   uploadedAt: createdAt.getTime(),
   ...(authorized ? { "private": isPrivate } : {}) as any
 });
@@ -82,7 +79,7 @@ export const GET: RequestHandler = async ( event ) =>
     
     return Response.json({
       success: true,
-      data: fileRecords.map(obj => toFileObject<typeof authorized>(obj, url, authorized))
+      data: fileRecords.map(obj => toFileObject<typeof authorized>(obj, authorized))
     });
   } catch ( e: any )
   {
@@ -148,7 +145,7 @@ export const POST: RequestHandler = async ( event ) =>
     
     return Response.json({
       success: true,
-      data: uniqueData.map(obj => toFileObject<typeof authorized>(obj, new URL(event.request.url), authorized)),
+      data: uniqueData.map(obj => toFileObject<typeof authorized>(obj, authorized)),
     });
   } catch ( e: any )
   {
@@ -225,7 +222,7 @@ export const PATCH: RequestHandler = async ( event ) =>
       data
     });
     
-    return Response.json({ success: true, data: toFileObject<typeof authorized>(updatedFileRecord, new URL(event.request.url), authorized) });
+    return Response.json({ success: true, data: toFileObject<typeof authorized>(updatedFileRecord, authorized) });
   } catch ( e: any )
   {
     return Response.json({ success: false, error: e.message }, { status: 500 });

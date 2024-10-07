@@ -2,8 +2,6 @@ interface IFileObject
 {
   name: string;
   type: string;
-  rawUrl: string;
-  url: string;
   uploadedAt: number;
 }
 
