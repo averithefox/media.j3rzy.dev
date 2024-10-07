@@ -9,8 +9,12 @@ export const GET: RequestHandler = async ( event ) =>
   if ( response.status !== 200 )
     return response;
   
+  const validSizes: number[] = [200, 300, 400];
+  
   const buffer = Buffer.from(await (await response.blob()).arrayBuffer());
-  const width = 200; //new URL(event.request.url).searchParams.get("w");
+  const w = new URL(event.request.url).searchParams.get("w");
+  let width = w ? (!isNaN(Number(w)) && Number.isInteger(Number(w)) ? Number(w) : 200) : 200;
+  width = validSizes.includes(width) ? width : validSizes.reduce((prev, curr) => Math.abs(curr - width) < Math.abs(prev - width) ? curr : prev);
   const mimeType = response.headers.get("Content-Type")!;
   
   if ( mimeType.split("/")[0] !== "image" || mimeType.split("/")[1] === "gif" )
