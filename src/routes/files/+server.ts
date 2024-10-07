@@ -25,7 +25,7 @@ const isAuthorized = async ( req: Request, session: Session | null ) =>
 };
 
 const toFileObject = <T extends boolean = false> (
-  { mimeType, filename, private: isPrivate }: { mimeType: string, filename: string, "private": boolean },
+  { mimeType, filename, private: isPrivate, createdAt: uploadedAt }: { mimeType: string, filename: string, "private": boolean, createdAt: Date },
   { origin }: URL,
   authorized: T = false as T
 ): FileObject<T> => ({
@@ -33,6 +33,7 @@ const toFileObject = <T extends boolean = false> (
   type: mimeType,
   rawUrl: new URL(`/raw/${encodeURI(filename)}`, origin).href,
   url: new URL(`/${encodeURI(filename)}`, origin).href,
+  uploadedAt,
   ...(authorized ? { "private": isPrivate } : {}) as any
 });
 
@@ -117,6 +118,7 @@ export const POST: RequestHandler = async ( event ) =>
         hash: new Bun.CryptoHasher("sha256").update(buffer).digest("hex"),
         mimeType: file.type === "application/octet-stream" && type ? type.mime : file.type,
         "private": arePrivate,
+        createdAt: new Date(),
         buffer,
       };
     }));

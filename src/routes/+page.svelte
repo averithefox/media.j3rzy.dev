@@ -5,12 +5,12 @@
   import DropOverlay from "$components/drop-overlay.svelte";
   import FileTile from "$components/file-tile.svelte";
 
-  const deleteFile = async (filename: string) =>
+  const deleteFile = async ( filename: string ) =>
   {
     if ( !confirm(`Are you sure you want to delete ${filename}?`) ) return;
     const res = await fetch("/files", {
       method: "DELETE",
-      headers: { "Content-Type": "application/json", },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename }),
     });
     const json = await res.json();
@@ -18,14 +18,14 @@
     else alert(json.error);
   };
 
-  const togglePrivate = async (filename: string) =>
+  const togglePrivate = async ( filename: string ) =>
   {
     const i = files.findIndex(f => f.name === filename);
     const file = files[i];
     if ( i === -1 ) return alert("File not found!");
     const res = await fetch("/files", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename, private: !file.private }),
     });
     const json: EndpointResponse<FileObject<true>> = await res.json();
@@ -33,7 +33,8 @@
     else alert(json.error);
   };
 
-  let { success, error, data: files = [] } = $page.data.files as EndpointResponse<FileObject<true>[]>;
+  let { success, error, data } = $page.data.files as EndpointResponse<FileObject<true>[]>;
+  $: files = (data ?? []).sort((a, b) => a.uploadedAt.getDate() - b.uploadedAt.getDate());
 </script>
 
 <DropOverlay on:upload={e => files = [...files, ...e.detail]}/>
