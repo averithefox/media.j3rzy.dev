@@ -25,7 +25,7 @@ const isAuthorized = async ( req: Request, session: Session | null ) =>
 };
 
 const toFileObject = <T extends boolean = false> (
-  { mimeType, filename, private: isPrivate, createdAt: uploadedAt }: { mimeType: string, filename: string, "private": boolean, createdAt: Date },
+  { mimeType, filename, private: isPrivate, createdAt }: { mimeType: string, filename: string, "private": boolean, createdAt: Date },
   { origin }: URL,
   authorized: T = false as T
 ): FileObject<T> => ({
@@ -33,7 +33,7 @@ const toFileObject = <T extends boolean = false> (
   type: mimeType,
   rawUrl: new URL(`/raw/${encodeURI(filename)}`, origin).href,
   url: new URL(`/${encodeURI(filename)}`, origin).href,
-  uploadedAt,
+  uploadedAt: createdAt.getTime(),
   ...(authorized ? { "private": isPrivate } : {}) as any
 });
 

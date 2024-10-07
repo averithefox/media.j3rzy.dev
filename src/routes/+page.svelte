@@ -34,7 +34,7 @@
   };
 
   let { success, error, data } = $page.data.files as EndpointResponse<FileObject<true>[]>;
-  $: files = (data ?? []).sort((a, b) => new Date(a.uploadedAt).getDate() - new Date(b.uploadedAt).getDate());
+  $: files = (data ?? []).sort((a, b) => a.uploadedAt - b.uploadedAt);
 </script>
 
 <DropOverlay on:upload={e => files = [...files, ...e.detail]}/>

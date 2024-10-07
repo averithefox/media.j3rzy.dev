@@ -4,7 +4,7 @@ interface IFileObject
   type: string;
   rawUrl: string;
   url: string;
-  uploadedAt: Date;
+  uploadedAt: number;
 }
 
 /**
