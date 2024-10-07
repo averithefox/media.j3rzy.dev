@@ -28,6 +28,7 @@ export const GET: RequestHandler = async (event) =>
         "X-File-Hash": record.hash,
         "Content-Length": file.size.toString(),
         "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Disposition": `inline; filename="${record.filename}"`,
       },
     });
   } catch ( e: unknown )
