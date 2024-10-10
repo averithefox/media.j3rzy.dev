@@ -1,63 +1,63 @@
 name: "CI/CD"
 
-on: [ push ]
-
-env:
-  NODE_VERSION: "20"
+on: [ push, pull_request ]
 
 jobs:
-  npm:
-    name: install dependencies (bun)
+  setup-bun:
+    name: Setup Bun and Cache Dependencies
     runs-on: ubuntu-latest
+    outputs:
+      bun-cache-hit: ${{ steps.cache-dependencies.outputs.cache-hit }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache Bun Dependencies
+        id: cache-dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.bun
+            bun.lockb
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Setup Bun
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://bun.sh/install | bash
+        shell: bash
 
-      - name: Install dependencies
+      - name: Install Dependencies
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: ~/.bun/bin/bun install
 
   es-lint:
-    name: check linting (es-lint)
-    needs: [ npm ]
+    name: Check linting (es-lint)
+    needs: [ setup-bun ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-
-      - name: Install dependencies
-        run: ~/.bun/bin/bun install
-
-      - name: Check ESLint
+      - name: Run ESLint
         run: ~/.bun/bin/bun lint
 
   svelte:
-    name: test build (svelte)
+    name: Test build (svelte)
     needs: [ es-lint ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-
-      - name: Install dependencies
-        run: ~/.bun/bin/bun install
-
       - name: Build Svelte
         run: ~/.bun/bin/bun run build
 
   deploy:
-    name: deploy (ssh)
+    name: Deploy (ssh)
     if: |
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
       && github.repository_owner == 'averithefox'
@@ -68,7 +68,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: SSH
+      - name: SSH Deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
