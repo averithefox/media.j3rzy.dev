@@ -2,8 +2,12 @@
   import { MetaTags } from "svelte-meta-tags";
   import { page } from "$app/stores";
 
+  import Popup from "$components/popup.svelte";
+
   import "../app.css";
 </script>
+
+<Popup />
 
 {#if $page.url.pathname.split("/").filter(Boolean).length !== 1}
   <MetaTags
@@ -37,4 +41,4 @@
   />
 {/if}
 
-<slot/>
+<slot />

@@ -30,7 +30,7 @@ interface IErrorResponse
 
 /**
  * @template T The type of the data to be returned.
- * @template V Whether to include the data in the response.
+ * @template V Is the data key present in the response object?
  */
 export type EndpointResponse<T = unknown, V extends boolean = true> =
   (ISuccessResponse<T> & (V extends true ? Record<string, never> : { data?: T }))
@@ -41,4 +41,11 @@ export interface ApiKey
   key: string;
   expiresAt: Date | null;
   createdAt: Date;
+}
+
+export interface PopUpData
+{
+  title: string;
+  message: string;
+  success: boolean;
 }

@@ -4,6 +4,7 @@
 
   import DropOverlay from "$components/drop-overlay.svelte";
   import FileTile from "$components/file-tile.svelte";
+  import { popupStore } from "../store";
 
   const deleteFile = async ( filename: string ) =>
   {
@@ -38,6 +39,10 @@
 </script>
 
 <DropOverlay on:upload={e => files = [...files, ...e.detail]}/>
+
+<button on:click={() => popupStore.set({ message: "Message", success: true, title: "title" })}>
+  Click me
+</button>
 
 {#if success}
   {#if files}
