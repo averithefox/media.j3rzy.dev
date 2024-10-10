@@ -1,9 +1,6 @@
 name: "CI/CD"
 
-on: [ push ]
-
-env:
-  NODE_VERSION: "20"
+on: [ push, pull_request ]
 
 jobs:
   npm:
