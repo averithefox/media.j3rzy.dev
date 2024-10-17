@@ -1,13 +1,15 @@
 class TimerClass
 {
+  private readonly duration: number;
   private startTime: number | null = null;
   private remainingTime: number;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private readonly callback: () => void;
+  private totalElapsedTime: number = 0;
   
   public constructor( callback: () => void, duration: number )
   {
-    this.remainingTime = duration;
+    this.remainingTime = this.duration = duration;
     this.callback = callback;
   }
   
@@ -31,7 +33,12 @@ class TimerClass
     
     this.clearTimeout();
     if ( this.startTime )
-      this.remainingTime -= Date.now() - this.startTime;
+    {
+      const currentElapsed = Date.now() - this.startTime;
+      this.totalElapsedTime += currentElapsed;
+      this.remainingTime -= currentElapsed;
+      this.startTime = null;
+    }
   }
   
   public resume(): void
@@ -46,15 +53,20 @@ class TimerClass
   {
     this.clearTimeout();
     
+    if ( this.startTime )
+    {
+      this.totalElapsedTime += Date.now() - this.startTime;
+      this.startTime = null;
+    }
+    
     if ( runCallback )
       this.callback();
   }
   
   public getTimePassed(): number
   {
-    if ( !this.startTime ) return 0;
-    
-    return Date.now() - this.startTime;
+    const currentElapsed = this.startTime ? Date.now() - this.startTime : 0;
+    return this.totalElapsedTime + currentElapsed;
   }
   
   public getTimeRemaining(): number
@@ -64,12 +76,12 @@ class TimerClass
   
   public getCompletedPercentage(): number
   {
-    return this.getTimePassed() / (this.getTimePassed() + this.remainingTime);
+    return Math.min(100, this.getTimePassed() / this.duration * 100);
   }
   
   public toString(): string
   {
-    return `Timer { startTime: ${this.startTime}, remainingTime: ${this.remainingTime}, timeoutId: ${this.timeoutId} }`;
+    return `Timer { startTime: ${this.startTime}, remainingTime: ${this.remainingTime}, timeoutId: ${this.timeoutId}, totalElapsedTime: ${this.totalElapsedTime} }`;
   }
 }
 
