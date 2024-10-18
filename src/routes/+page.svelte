@@ -42,8 +42,7 @@
 {#if success}
   {#if files}
     <main
-      class="w-full grid gap-3 p-3 justify-items-start items-center justify-center"
-      style="grid-template-columns: repeat(auto-fit, minmax(200px, max-content));"
+      class="w-full flex flex-wrap justify-evenly gap-2 p-2"
     >
       {#each files as file (file.name)}
         <FileTile
