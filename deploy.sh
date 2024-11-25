@@ -27,7 +27,6 @@ check_dot_env()
     touch .env
     {
       echo "AUTH_SECRET=$(openssl rand -base64 33)"
-      echo 'AUTH_URL='
       echo 'POSTGRES_USER='
       echo 'POSTGRES_PASSWORD='
     } >> .env
